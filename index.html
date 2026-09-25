@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="SunShine Web Radio — Feel the Music. Feel the Light.">
+  <title>SunShine Web Radio</title>
+  <link rel="icon" href="assets/sunshine-logo.webp" type="image/webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header" id="top">
+      <div class="container header-inner">
+        <a class="brand" href="#top" aria-label="SunShine home">
+          <img src="assets/sunshine-logo.webp" alt="SunShine Web Radio logo">
+        </a>
+
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+
+        <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+          <a class="active" href="#top">Home</a>
+          <a href="#live">Live Radio</a>
+          <a href="#shows">Shows</a>
+          <a href="#schedule">Schedule</a>
+          <a href="#djs">DJs</a>
+          <a href="#chat">Chat</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <button class="listen-live top-listen" type="button" data-live-trigger>
+          <span class="play-icon">▶</span>
+          <span>Listen Live</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="live">
+        <div class="hero-light hero-light-one"></div>
+        <div class="hero-light hero-light-two"></div>
+        <div class="container hero-grid">
+          <div class="hero-brand">
+            <img class="hero-logo" src="assets/sunshine-logo.webp" alt="SunShine">
+            <h1>Feel the Music. <span>Feel the Light.</span></h1>
+            <p>Your Web Radio. Brighter Days. Better Music.</p>
+          </div>
+
+          <article class="player-card" aria-label="SunShine live radio player">
+            <div class="player-head">
+              <div class="on-air"><span class="broadcast-dot"></span> ON AIR</div>
+              <div class="station-label">
+                <strong>SunShine Web Radio</strong>
+                <span>Non Stop Good Vibes</span>
+              </div>
+            </div>
+
+            <div class="now-playing">
+              <div class="cover-art" aria-hidden="true">
+                <div class="cover-sun"></div>
+                <div class="cover-note">♪</div>
+              </div>
+              <div class="track-meta">
+                <span class="eyebrow">NOW PLAYING</span>
+                <h2 id="trackTitle">SunShine Live</h2>
+                <p id="trackArtist">Waiting for Jazzler metadata</p>
+                <div class="equalizer" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="player-progress">
+              <span>LIVE</span>
+              <div class="progress-track"><div class="progress-fill"></div></div>
+              <span>24/7</span>
+            </div>
+
+            <div class="player-controls">
+              <button type="button" class="round-control" aria-label="Previous">‹</button>
+              <button type="button" class="main-play" id="mainPlay" data-live-trigger aria-label="Play live radio">▶</button>
+              <button type="button" class="round-control" aria-label="Next">›</button>
+              <div class="volume-shell" aria-label="Volume">
+                <span>🔊</span>
+                <div class="volume-line"><span></span></div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="container split-grid">
+          <article class="panel schedule-panel" id="schedule">
+            <div class="section-heading">
+              <div>
+                <h2>Today's <span>Schedule</span></h2>
+                <p>Great shows. Amazing people. All day long.</p>
+              </div>
+              <a class="outline-button" href="#schedule">View Full Schedule <span>→</span></a>
+            </div>
+            <div class="schedule-list" id="scheduleList"></div>
+          </article>
+
+          <article class="panel djs-panel" id="djs">
+            <div class="section-heading">
+              <div>
+                <h2>Our DJs & <span>Live Shows</span></h2>
+                <p>The voices that bring you the sunshine.</p>
+              </div>
+              <a class="outline-button" href="#djs">Meet All DJs <span>→</span></a>
+            </div>
+            <div class="dj-grid" id="djGrid"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="container" id="chat">
+        <article class="panel chat-panel">
+          <div class="chat-heading">
+            <div>
+              <div class="chat-title-row">
+                <span class="chat-icon">•••</span>
+                <h2>Join the <span>SunShine Chat</span></h2>
+              </div>
+              <p>Real people. Great music. Brighter conversations.</p>
+            </div>
+            <div class="chat-status">
+              <span><i class="online-dot"></i><strong id="listenerCount">127</strong> live listeners chatting now</span>
+              <span class="online-pill">Online: <strong id="onlineCount">127</strong></span>
+            </div>
+          </div>
+
+          <div class="chat-feed" id="chatFeed" aria-live="polite"></div>
+
+          <form class="chat-compose" id="chatForm">
+            <button class="emoji-button" type="button" aria-label="Emoji">☺</button>
+            <input id="chatInput" type="text" maxlength="220" placeholder="Type your message to the SunShine community..." autocomplete="off">
+            <button class="send-button" type="submit"><span>➤</span> Send</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="listen-everywhere" id="shows">
+        <div class="container listen-grid">
+          <div>
+            <div class="section-heading listen-heading">
+              <div>
+                <h2>Listen <span>Everywhere</span></h2>
+                <p>SunShine is always with you. At home, at work, on the go.</p>
+              </div>
+            </div>
+
+            <div class="device-options">
+              <article>
+                <div class="device-icon">◎</div>
+                <div>
+                  <h3>On the Web</h3>
+                  <p>Listen directly from your browser.</p>
+                </div>
+              </article>
+              <article>
+                <div class="device-icon">▯</div>
+                <div>
+                  <h3>On Mobile</h3>
+                  <p>Mobile-ready responsive experience.</p>
+                </div>
+              </article>
+              <article>
+                <div class="device-icon">◉</div>
+                <div>
+                  <h3>On Smart Devices</h3>
+                  <p>Prepared for future smart-device integrations.</p>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="device-visual" aria-hidden="true">
+            <div class="laptop">
+              <div class="laptop-screen">
+                <img src="assets/sunshine-logo.webp" alt="">
+                <span>SunShine</span>
+              </div>
+              <div class="laptop-base"></div>
+            </div>
+            <div class="phone">
+              <div class="phone-notch"></div>
+              <img src="assets/sunshine-logo.webp" alt="">
+              <div class="phone-player">▶</div>
+            </div>
+            <div class="speaker"><span></span></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="footer-eq" aria-hidden="true"></div>
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <img src="assets/sunshine-logo.webp" alt="SunShine">
+          <div>
+            <strong>SunShine Web Radio</strong>
+            <p>Feel the Music. Feel the Light.</p>
+          </div>
+        </div>
+
+        <div class="footer-column">
+          <h3>Quick Links</h3>
+          <div class="footer-links">
+            <a href="#top">Home</a>
+            <a href="#live">Live Radio</a>
+            <a href="#shows">Shows</a>
+            <a href="#schedule">Schedule</a>
+            <a href="#djs">DJs</a>
+            <a href="#chat">Chat</a>
+          </div>
+        </div>
+
+        <div class="footer-column">
+          <h3>Follow Us</h3>
+          <div class="social-row">
+            <a href="#" aria-label="Facebook">f</a>
+            <a href="#" aria-label="Instagram">◎</a>
+            <a href="#" aria-label="TikTok">♪</a>
+            <a href="#" aria-label="YouTube">▶</a>
+          </div>
+        </div>
+
+        <div class="footer-column">
+          <h3>Contact Us</h3>
+          <p>SunShine Web Radio</p>
+          <p>Worldwide Broadcasting</p>
+          <p>Music Has No Borders</p>
+        </div>
+      </div>
+
+      <div class="container footer-bottom">
+        <span>© <span id="year"></span> SunShine Web Radio. All rights reserved.</span>
+        <span>Privacy Policy &nbsp;|&nbsp; Terms of Use</span>
+      </div>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
