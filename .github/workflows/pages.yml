@@ -1,0 +1,61 @@
+name: Deploy SunShine Web Radio
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate static site
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f index.html
+          test -f assets/css/styles.css
+          test -f assets/js/app.js
+          test -f assets/sunshine-logo.webp
+          grep -q "SunShine Web Radio" index.html
+          grep -q "Today's" index.html
+          grep -q "SunShine Chat" index.html
+          if grep -q "Explore Our Music" index.html; then
+            echo "Explore Our Music must remain excluded from the current homepage."
+            exit 1
+          fi
+          echo "Static site validation PASS"
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
