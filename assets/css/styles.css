@@ -1207,3 +1207,291 @@ img { max-width: 100%; display: block; }
   .footer-brand { grid-template-columns: 86px 1fr; }
   .footer-brand img { width: 86px; }
 }
+
+/* ===== PHASE 1B: SUNSHINE LUMINOUS GOLD POLISH ===== */
+
+:root {
+  --gold-soft: rgba(255, 208, 84, 0.35);
+  --orange-soft: rgba(255, 122, 0, 0.28);
+  --glow-strong:
+    0 0 18px rgba(255, 202, 76, 0.34),
+    0 0 38px rgba(255, 156, 0, 0.20),
+    0 0 64px rgba(255, 111, 0, 0.10);
+  --text-glow:
+    0 0 10px rgba(255, 215, 110, 0.24),
+    0 0 24px rgba(255, 150, 0, 0.14);
+}
+
+body {
+  background:
+    radial-gradient(circle at 18% 7%, rgba(255, 188, 45, 0.19), transparent 29rem),
+    radial-gradient(circle at 84% 10%, rgba(255, 112, 0, 0.15), transparent 25rem),
+    radial-gradient(circle at 50% 31%, rgba(255, 199, 80, 0.065), transparent 34rem),
+    linear-gradient(180deg, #06101d 0%, #07111f 48%, #050b14 100%);
+}
+
+.site-header {
+  border-bottom-color: rgba(255, 190, 0, 0.30);
+  box-shadow:
+    0 7px 22px rgba(0, 0, 0, 0.28),
+    0 1px 16px rgba(255, 168, 0, 0.10);
+}
+
+.brand img {
+  filter:
+    drop-shadow(0 0 8px rgba(255, 224, 117, 0.45))
+    drop-shadow(0 0 20px rgba(255, 171, 0, 0.25));
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  border-color: rgba(255, 195, 36, 0.66);
+  background:
+    linear-gradient(135deg, rgba(255, 216, 102, 0.15), rgba(255, 112, 0, 0.18));
+  box-shadow:
+    0 0 0 1px rgba(255, 186, 0, 0.12),
+    0 0 16px rgba(255, 200, 72, 0.22),
+    0 0 34px rgba(255, 123, 0, 0.12);
+  text-shadow: 0 0 10px rgba(255, 218, 112, 0.18);
+}
+
+.listen-live,
+.send-button {
+  box-shadow:
+    0 8px 28px rgba(255, 171, 0, 0.30),
+    0 0 18px rgba(255, 213, 90, 0.30),
+    0 0 42px rgba(255, 133, 0, 0.16),
+    inset 0 1px rgba(255,255,255,.76);
+}
+
+.hero {
+  border-bottom-color: rgba(255, 197, 37, 0.34);
+  box-shadow:
+    inset 0 -1px 0 rgba(255, 210, 76, 0.15),
+    0 14px 44px rgba(255, 122, 0, 0.08);
+}
+
+.hero-light-one {
+  background: rgba(255, 195, 61, 0.35);
+  filter: blur(90px);
+}
+
+.hero-light-two {
+  background: rgba(255, 114, 0, 0.29);
+  filter: blur(95px);
+}
+
+.hero-logo {
+  filter:
+    drop-shadow(0 0 10px rgba(255, 230, 129, 0.52))
+    drop-shadow(0 0 28px rgba(255, 177, 0, 0.34))
+    drop-shadow(0 0 52px rgba(255, 111, 0, 0.19));
+}
+
+.hero-brand h1 {
+  text-shadow:
+    0 4px 22px rgba(0,0,0,.42),
+    0 0 12px rgba(255, 224, 126, 0.24),
+    0 0 28px rgba(255, 153, 0, 0.15);
+}
+
+.hero-brand h1 span,
+.section-heading h2 span,
+.chat-title-row h2 span,
+.footer-column h3 {
+  text-shadow: var(--text-glow);
+}
+
+.hero-brand p {
+  text-shadow:
+    0 0 10px rgba(255, 230, 160, 0.15),
+    0 0 24px rgba(255, 151, 0, 0.09);
+}
+
+.player-card,
+.panel {
+  border-color: rgba(255, 195, 39, 0.50);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(255, 201, 55, 0.08),
+    0 0 20px rgba(255, 192, 38, 0.18),
+    0 0 48px rgba(255, 126, 0, 0.13),
+    inset 0 1px rgba(255,255,255,.045),
+    inset 0 0 28px rgba(255, 169, 0, 0.028);
+}
+
+.player-card {
+  box-shadow:
+    0 22px 52px rgba(0, 0, 0, 0.40),
+    0 0 0 1px rgba(255, 213, 80, 0.12),
+    0 0 26px rgba(255, 200, 68, 0.24),
+    0 0 58px rgba(255, 120, 0, 0.16),
+    inset 0 1px rgba(255,255,255,.06),
+    inset 0 0 34px rgba(255, 169, 0, 0.035);
+}
+
+.on-air,
+.status-tag,
+.live-pill {
+  box-shadow:
+    0 0 12px rgba(255, 67, 67, 0.32),
+    0 0 25px rgba(255, 120, 0, 0.20);
+}
+
+.main-play {
+  box-shadow:
+    0 0 18px rgba(255, 222, 110, 0.42),
+    0 0 38px rgba(255, 172, 0, 0.28),
+    0 0 62px rgba(255, 117, 0, 0.16);
+}
+
+.progress-fill,
+.volume-line span {
+  box-shadow:
+    0 0 9px rgba(255, 226, 119, 0.35),
+    0 0 20px rgba(255, 156, 0, 0.16);
+}
+
+.equalizer i {
+  box-shadow:
+    0 0 8px rgba(255, 225, 108, 0.32),
+    0 0 16px rgba(255, 145, 0, 0.13);
+}
+
+.section-heading h2,
+.chat-title-row h2 {
+  text-shadow:
+    0 0 10px rgba(255, 220, 110, 0.16),
+    0 0 22px rgba(255, 130, 0, 0.08);
+}
+
+.outline-button {
+  border-color: rgba(255, 201, 61, 0.46);
+  box-shadow:
+    0 0 12px rgba(255, 191, 28, 0.10),
+    inset 0 0 12px rgba(255, 174, 0, 0.025);
+}
+
+.outline-button:hover {
+  border-color: rgba(255, 214, 89, 0.82);
+  box-shadow:
+    0 0 16px rgba(255, 204, 69, 0.20),
+    0 0 30px rgba(255, 132, 0, 0.10);
+}
+
+.schedule-row.live {
+  border-color: rgba(255, 202, 50, 0.55);
+  box-shadow:
+    0 0 14px rgba(255, 202, 54, 0.17),
+    0 0 30px rgba(255, 123, 0, 0.10),
+    inset 0 0 14px rgba(255, 188, 40, 0.045);
+}
+
+.dj-card {
+  border-color: rgba(255, 198, 41, 0.38);
+  box-shadow:
+    0 0 13px rgba(255, 197, 47, 0.12),
+    0 0 28px rgba(255, 126, 0, 0.08);
+}
+
+.chat-panel {
+  border-color: rgba(255, 202, 49, 0.60);
+  box-shadow:
+    0 20px 46px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(255, 215, 92, 0.10),
+    0 0 24px rgba(255, 205, 64, 0.22),
+    0 0 52px rgba(255, 124, 0, 0.15),
+    inset 0 0 30px rgba(255, 174, 0, 0.03);
+}
+
+.chat-icon {
+  box-shadow:
+    0 0 14px rgba(255, 225, 112, 0.32),
+    0 0 28px rgba(255, 147, 0, 0.16);
+}
+
+.chat-status > span,
+.message-bubble,
+.chat-compose input {
+  border-color: rgba(255, 200, 52, 0.34);
+  box-shadow:
+    0 0 10px rgba(255, 190, 28, 0.07),
+    inset 0 0 10px rgba(255, 173, 0, 0.022);
+}
+
+.chat-compose input:focus {
+  border-color: rgba(255, 221, 102, 0.76);
+  box-shadow:
+    0 0 0 3px rgba(255, 183, 0, 0.09),
+    0 0 18px rgba(255, 199, 50, 0.15);
+}
+
+.device-options article,
+.device-visual {
+  border-color: rgba(255, 194, 33, 0.26);
+  box-shadow:
+    0 0 14px rgba(255, 193, 35, 0.07),
+    0 0 32px rgba(255, 117, 0, 0.045);
+}
+
+.device-icon {
+  box-shadow:
+    0 0 12px rgba(255, 210, 76, 0.15),
+    inset 0 0 14px rgba(255, 181, 0, 0.07);
+}
+
+.site-footer {
+  border-top-color: rgba(255, 201, 51, 0.30);
+  box-shadow: 0 -10px 34px rgba(255, 129, 0, 0.07);
+}
+
+.footer-brand img {
+  filter:
+    drop-shadow(0 0 8px rgba(255, 224, 112, 0.36))
+    drop-shadow(0 0 19px rgba(255, 167, 0, 0.19));
+}
+
+.social-row a {
+  border-color: rgba(255, 211, 81, 0.54);
+  box-shadow:
+    0 0 10px rgba(255, 203, 58, 0.14),
+    0 0 21px rgba(255, 125, 0, 0.08);
+}
+
+.footer-eq {
+  opacity: .34;
+  filter:
+    drop-shadow(0 0 8px rgba(255, 209, 61, 0.26))
+    drop-shadow(0 0 16px rgba(255, 132, 0, 0.11));
+}
+
+@keyframes sunshineGlowPulse {
+  0%, 100% {
+    box-shadow:
+      0 20px 48px rgba(0, 0, 0, 0.38),
+      0 0 0 1px rgba(255, 201, 55, 0.08),
+      0 0 19px rgba(255, 193, 40, 0.17),
+      0 0 43px rgba(255, 123, 0, 0.12),
+      inset 0 0 26px rgba(255, 169, 0, 0.026);
+  }
+  50% {
+    box-shadow:
+      0 21px 50px rgba(0, 0, 0, 0.40),
+      0 0 0 1px rgba(255, 216, 86, 0.13),
+      0 0 25px rgba(255, 211, 70, 0.23),
+      0 0 54px rgba(255, 130, 0, 0.16),
+      inset 0 0 31px rgba(255, 174, 0, 0.035);
+  }
+}
+
+.player-card,
+.chat-panel {
+  animation: sunshineGlowPulse 3.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-card,
+  .chat-panel {
+    animation: none;
+  }
+}
