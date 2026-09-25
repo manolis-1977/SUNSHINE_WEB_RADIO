@@ -18,44 +18,65 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate static site
+      - name: Validate SunShine static site
         shell: bash
         run: |
           set -euo pipefail
-          test -f index.html
-          test -f assets/css/styles.css
-          test -f assets/js/app.js
-          test -f assets/sunshine-logo.webp
-          grep -q "SunShine Web Radio" index.html
-          grep -q "Today's" index.html
-          grep -q "SunShine Chat" index.html
-          if grep -q "Explore Our Music" index.html; then
-            echo "Explore Our Music must remain excluded from the current homepage."
+
+          echo "Checking required files..."
+          for file in             index.html             assets/css/styles.css             assets/js/app.js             assets/sunshine-logo.webp
+          do
+            if [[ ! -f "$file" ]]; then
+              echo "::error file=$file::Required file is missing"
+              exit 1
+            fi
+            echo "PASS: $file"
+          done
+
+          echo "Checking locked homepage content..."
+          grep -Fq "SunShine Web Radio" index.html || {
+            echo "::error file=index.html::SunShine Web Radio branding is missing"
+            exit 1
+          }
+
+          grep -Fq "Today's" index.html || {
+            echo "::error file=index.html::Today's Schedule section is missing"
+            exit 1
+          }
+
+          grep -Fq "SunShine Chat" index.html || {
+            echo "::error file=index.html::SunShine Chat section is missing"
+            exit 1
+          }
+
+          if grep -Fq "Explore Our Music" index.html; then
+            echo "::error file=index.html::Explore Our Music must remain excluded from the current homepage"
             exit 1
           fi
-          echo "Static site validation PASS"
+
+          echo "SUNSHINE STATIC SITE VALIDATION: PASS"
 
   deploy:
+    runs-on: ubuntu-latest
+    needs: validate
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: validate
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload static site
+      - name: Upload SunShine site artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: "."
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy SunShine to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
