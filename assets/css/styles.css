@@ -1818,3 +1818,183 @@ body::after,
     animation: none;
   }
 }
+
+/* ===== PHASE 1E: SITEWIDE STRONG AMBIENT GOLD HAZE ===== */
+
+/*
+  Applies the same warm cinematic haze seen in the reference red box
+  across the whole SunShine visual system without changing layout/content.
+*/
+
+body {
+  background:
+    radial-gradient(ellipse at 12% 10%, rgba(255, 194, 62, 0.24), transparent 31rem),
+    radial-gradient(ellipse at 88% 14%, rgba(255, 116, 0, 0.16), transparent 29rem),
+    radial-gradient(ellipse at 18% 52%, rgba(255, 174, 30, 0.10), transparent 34rem),
+    radial-gradient(ellipse at 82% 70%, rgba(255, 120, 0, 0.08), transparent 35rem),
+    linear-gradient(180deg, #07111f 0%, #07111f 35%, #050d18 100%);
+}
+
+/* Major page bands: wide left-to-right amber haze */
+.hero,
+.dashboard-section,
+.listen-everywhere,
+.site-footer {
+  background-image:
+    radial-gradient(
+      ellipse at 8% 42%,
+      rgba(255, 197, 78, 0.24) 0%,
+      rgba(255, 167, 29, 0.16) 21%,
+      rgba(255, 129, 0, 0.07) 43%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse at 94% 40%,
+      rgba(255, 116, 0, 0.13) 0%,
+      rgba(255, 103, 0, 0.05) 34%,
+      transparent 66%
+    ),
+    linear-gradient(180deg, rgba(7,17,31,.96), rgba(5,13,24,.98));
+  background-blend-mode: screen, screen, normal;
+}
+
+/* Hero remains the brightest zone */
+.hero {
+  background-image:
+    radial-gradient(
+      ellipse at 7% 36%,
+      rgba(255, 205, 92, 0.34) 0%,
+      rgba(255, 174, 33, 0.22) 24%,
+      rgba(255, 129, 0, 0.09) 46%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse at 94% 38%,
+      rgba(255, 118, 0, 0.18) 0%,
+      rgba(255, 95, 0, 0.07) 34%,
+      transparent 66%
+    ),
+    linear-gradient(180deg, rgba(6,15,27,.94), rgba(5,13,24,.98));
+}
+
+/* Main framed areas: same haze INSIDE every panel */
+.player-card,
+.panel,
+.chat-panel,
+.device-visual {
+  background-image:
+    radial-gradient(
+      ellipse at 0% 42%,
+      rgba(255, 202, 82, 0.21) 0%,
+      rgba(255, 166, 22, 0.13) 22%,
+      rgba(255, 119, 0, 0.05) 43%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse at 100% 55%,
+      rgba(255, 116, 0, 0.09) 0%,
+      transparent 52%
+    ),
+    linear-gradient(180deg, rgba(11,26,45,.98), rgba(5,13,24,.985));
+  background-blend-mode: screen, screen, normal;
+  border-color: rgba(255, 204, 62, 0.56);
+  box-shadow:
+    0 22px 50px rgba(0, 0, 0, .40),
+    0 0 0 1px rgba(255, 219, 101, .10),
+    0 0 24px rgba(255, 197, 54, .20),
+    0 0 54px rgba(255, 121, 0, .14),
+    inset 0 0 36px rgba(255, 174, 24, .035);
+}
+
+/* Schedule rows, DJ cards, chat messages and listen cards inherit the same light language */
+.schedule-row,
+.dj-card,
+.message-bubble,
+.device-options article {
+  background-image:
+    radial-gradient(
+      ellipse at 0% 50%,
+      rgba(255, 196, 66, 0.11) 0%,
+      rgba(255, 151, 0, 0.055) 30%,
+      transparent 62%
+    ),
+    linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012));
+  background-blend-mode: screen, normal;
+}
+
+.schedule-row.live {
+  background-image:
+    radial-gradient(
+      ellipse at 0% 50%,
+      rgba(255, 218, 99, 0.18) 0%,
+      rgba(255, 157, 0, 0.10) 32%,
+      transparent 66%
+    ),
+    linear-gradient(90deg, rgba(255,73,45,.15), rgba(255,181,0,.08));
+}
+
+.dj-card {
+  background-color: #0a1423;
+}
+
+.message-bubble {
+  background-color: rgba(9, 19, 33, .80);
+}
+
+/* Header gets a subtle continuation of the ambient gold */
+.site-header {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 184, 41, .08), transparent 34rem),
+    rgba(4, 11, 21, 0.91);
+  box-shadow:
+    0 8px 26px rgba(0,0,0,.30),
+    0 1px 18px rgba(255, 177, 0, .12);
+}
+
+/* Stronger side radiance without covering text */
+.hero-light-one {
+  width: 590px;
+  height: 500px;
+  left: -210px;
+  background: rgba(255, 196, 61, 0.31);
+  filter: blur(105px);
+}
+
+.hero-light-two {
+  width: 500px;
+  height: 440px;
+  right: -210px;
+  background: rgba(255, 113, 0, 0.25);
+  filter: blur(105px);
+}
+
+/* Keep the gold treatment visible on smaller screens but reduce intensity */
+@media (max-width: 900px) {
+  .hero,
+  .dashboard-section,
+  .listen-everywhere,
+  .site-footer {
+    background-image:
+      radial-gradient(
+        ellipse at 0% 35%,
+        rgba(255, 197, 78, 0.17) 0%,
+        rgba(255, 155, 0, 0.09) 28%,
+        transparent 62%
+      ),
+      linear-gradient(180deg, rgba(7,17,31,.97), rgba(5,13,24,.99));
+  }
+
+  .player-card,
+  .panel,
+  .chat-panel,
+  .device-visual {
+    background-image:
+      radial-gradient(
+        ellipse at 0% 42%,
+        rgba(255, 199, 73, 0.14) 0%,
+        rgba(255, 148, 0, 0.07) 28%,
+        transparent 64%
+      ),
+      linear-gradient(180deg, rgba(11,26,45,.985), rgba(5,13,24,.99));
+  }
+}
