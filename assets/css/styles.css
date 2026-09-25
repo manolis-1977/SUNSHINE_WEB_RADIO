@@ -1998,3 +1998,204 @@ body {
       linear-gradient(180deg, rgba(11,26,45,.985), rgba(5,13,24,.99));
   }
 }
+
+/* ===== PHASE 1F: STRONGER LUMINOUS GLOW ===== */
+
+/* Stronger overall warm glow */
+.hero,
+.dashboard-section,
+.listen-everywhere,
+.site-footer {
+  box-shadow:
+    inset 0 0 80px rgba(255, 176, 0, 0.035),
+    inset 0 0 140px rgba(255, 122, 0, 0.022);
+}
+
+/* Increase ambient gold haze brightness */
+.hero::before,
+.dashboard-section::before,
+.listen-everywhere::before,
+.site-footer::before {
+  opacity: 1;
+  filter: blur(42px);
+}
+
+.hero::after,
+.dashboard-section::after,
+.listen-everywhere::after,
+.site-footer::after {
+  opacity: 0.95;
+  filter: blur(52px);
+}
+
+/* Brighter framed panels */
+.player-card,
+.panel,
+.chat-panel,
+.device-visual {
+  border-color: rgba(255, 214, 88, 0.72);
+  box-shadow:
+    0 22px 50px rgba(0, 0, 0, .42),
+    0 0 0 1px rgba(255, 224, 116, .13),
+    0 0 18px rgba(255, 207, 88, .20),
+    0 0 34px rgba(255, 174, 33, .18),
+    0 0 68px rgba(255, 122, 0, .15),
+    inset 0 0 38px rgba(255, 179, 26, .05);
+}
+
+/* Luminous top-edge highlight on framed blocks */
+.player-card::after,
+.panel::after,
+.chat-panel::after,
+.device-visual::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 224, 116, 0.95),
+    rgba(255, 173, 31, 0.75),
+    transparent
+  );
+  box-shadow:
+    0 0 10px rgba(255, 217, 102, 0.42),
+    0 0 24px rgba(255, 162, 0, 0.18);
+  pointer-events: none;
+}
+
+/* Stronger title glow */
+.hero-brand h1,
+.section-heading h2,
+.chat-title-row h2 {
+  text-shadow:
+    0 0 10px rgba(255, 225, 125, 0.22),
+    0 0 24px rgba(255, 188, 56, 0.18),
+    0 0 42px rgba(255, 132, 0, 0.10);
+}
+
+.hero-brand h1 span,
+.section-heading h2 span,
+.chat-title-row h2 span {
+  text-shadow:
+    0 0 10px rgba(255, 228, 128, 0.30),
+    0 0 22px rgba(255, 189, 52, 0.22),
+    0 0 40px rgba(255, 132, 0, 0.12);
+}
+
+/* Logo and hero brightness */
+.hero-logo {
+  filter:
+    drop-shadow(0 0 12px rgba(255, 231, 140, 0.55))
+    drop-shadow(0 0 28px rgba(255, 186, 0, 0.36))
+    drop-shadow(0 0 56px rgba(255, 125, 0, 0.22));
+}
+
+.hero-brand::before {
+  filter: blur(34px);
+  opacity: 1;
+}
+
+/* Stronger left/right hero ambient lights */
+.hero-light-one {
+  background: rgba(255, 198, 66, 0.40);
+  filter: blur(115px);
+}
+
+.hero-light-two {
+  background: rgba(255, 118, 0, 0.30);
+  filter: blur(115px);
+}
+
+/* Buttons and important action glow */
+.listen-live,
+.send-button,
+.main-play {
+  box-shadow:
+    0 0 14px rgba(255, 224, 120, 0.36),
+    0 0 28px rgba(255, 188, 48, 0.28),
+    0 0 54px rgba(255, 126, 0, 0.18),
+    inset 0 1px rgba(255,255,255,.78);
+}
+
+/* Schedule ON AIR / live elements */
+.on-air,
+.status-tag,
+.live-pill {
+  box-shadow:
+    0 0 12px rgba(255, 84, 84, 0.32),
+    0 0 22px rgba(255, 130, 0, 0.22),
+    0 0 38px rgba(255, 82, 36, 0.12);
+}
+
+/* Chat bubbles / small cards glow */
+.schedule-row,
+.dj-card,
+.message-bubble,
+.device-options article {
+  box-shadow:
+    0 0 12px rgba(255, 184, 36, 0.08),
+    inset 0 0 16px rgba(255, 160, 0, 0.03);
+}
+
+.message-bubble {
+  border-color: rgba(255, 214, 84, 0.40);
+}
+
+.dj-card {
+  border-color: rgba(255, 204, 66, 0.44);
+}
+
+/* Footer lighting */
+.footer-eq {
+  opacity: .52;
+  filter:
+    drop-shadow(0 0 12px rgba(255, 208, 71, 0.34))
+    drop-shadow(0 0 24px rgba(255, 132, 0, 0.18));
+}
+
+.social-row a {
+  box-shadow:
+    0 0 12px rgba(255, 208, 71, 0.18),
+    0 0 24px rgba(255, 132, 0, 0.12);
+}
+
+/* Stronger pulse only on featured blocks */
+@keyframes sunshineStrongPulse {
+  0%, 100% {
+    box-shadow:
+      0 22px 50px rgba(0, 0, 0, .42),
+      0 0 0 1px rgba(255, 224, 116, .13),
+      0 0 18px rgba(255, 207, 88, .20),
+      0 0 34px rgba(255, 174, 33, .18),
+      0 0 68px rgba(255, 122, 0, .15),
+      inset 0 0 38px rgba(255, 179, 26, .05);
+  }
+  50% {
+    box-shadow:
+      0 24px 54px rgba(0, 0, 0, .44),
+      0 0 0 1px rgba(255, 232, 132, .18),
+      0 0 24px rgba(255, 216, 102, .28),
+      0 0 42px rgba(255, 188, 48, .22),
+      0 0 80px rgba(255, 128, 0, .18),
+      inset 0 0 46px rgba(255, 190, 46, .07);
+  }
+}
+
+.player-card,
+.chat-panel,
+.device-visual {
+  animation: sunshineStrongPulse 4.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-card,
+  .chat-panel,
+  .device-visual {
+    animation: none;
+  }
+}
