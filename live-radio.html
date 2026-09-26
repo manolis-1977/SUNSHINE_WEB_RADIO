@@ -55,8 +55,8 @@
           <div class="now-playing">
             <div class="cover-art"><div class="cover-sun"></div><div class="cover-note">♪</div></div>
             <div class="track-meta">
-              <span class="eyebrow">NOW PLAYING</span><h2>SunShine Live</h2>
-              <p>Jazzler metadata connection will be activated in the streaming phase.</p>
+              <span class="eyebrow">NOW PLAYING</span><h2 id="trackTitle">SunShine Live</h2>
+              <p id="trackArtist">Waiting for Jazzler metadata</p>
               <div class="equalizer"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
             </div>
           </div>
@@ -100,7 +100,9 @@
       </div>
     </footer>
   </div>
+  <audio id="sunshineAudio" preload="none" playsinline></audio>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/site.js?v=phase3a"></script>
+  <script src="assets/js/radio-config.js?v=stream1"></script>
+  <script src="assets/js/site.js?v=stream1"></script>
 </body>
 </html>
