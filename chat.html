@@ -41,18 +41,32 @@
     <section class="subpage-hero"><div class="container">
       <img class="hero-logo-small" src="assets/sunshine-logo.webp" alt="SunShine">
       <h1>SunShine <span>Chat</span></h1>
-      <p>The dedicated SunShine community area. The real-time multi-user backend will be connected in the chat implementation phase.</p>
+      <p>Your SunShine community space. Messages in this phase are stored only in this browser; the real multi-user backend will be connected in the dedicated chat phase.</p>
     </div></section>
-    <section class="subpage-section"><div class="container">
-      <article class="subpage-panel">
-        <div class="chat-title-row"><span class="chat-icon">•••</span><h2>Community <span>Preview</span></h2></div>
-        <div class="content-cards">
-          <article class="content-card"><h3>SofiaG</h3><p>This station always puts me in a good mood! ☀️💛</p></article>
-          <article class="content-card"><h3>NikosP</h3><p>SunShine Radio = the best vibes on the web! 🎧🔥</p></article>
-          <article class="content-card"><h3>AlexR</h3><p>Perfect show! Coffee, music and SunShine! ☕🎶</p></article>
-        </div>
-      </article>
-    </div></section>
+    <section class="subpage-section">
+      <div class="container">
+        <article class="panel chat-panel">
+          <div class="chat-heading">
+            <div>
+              <div class="chat-title-row">
+                <span class="chat-icon">•••</span>
+                <h2>Join the <span>SunShine Chat</span></h2>
+              </div>
+              <p>Local functional preview — real multi-user delivery comes with the chat backend.</p>
+            </div>
+            <div class="chat-status">
+              <span><i class="online-dot"></i>Local preview</span>
+            </div>
+          </div>
+          <div class="chat-feed" id="chatFeedPage" aria-live="polite"></div>
+          <form class="chat-compose" id="chatFormPage">
+            <button class="emoji-button" type="button" aria-label="Add sunshine emoji" data-emoji-target="chatInputPage">☺</button>
+            <input id="chatInputPage" type="text" maxlength="220" placeholder="Type your message to the SunShine community..." autocomplete="off">
+            <button class="send-button" type="submit"><span>➤</span> Add message</button>
+          </form>
+        </article>
+      </div>
+    </section>
   </main>
     
     <footer class="site-footer" id="contact">
@@ -89,6 +103,6 @@
     </footer>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/site.js"></script>
+  <script src="assets/js/site.js?v=phase3a"></script>
 </body>
 </html>
