@@ -61,7 +61,13 @@
             </div>
           </div>
           <div class="player-progress"><span>LIVE</span><div class="progress-track"><div class="progress-fill"></div></div><span>24/7</span></div>
-          <div class="player-controls"><button class="round-control" type="button" data-live-control="previous" aria-label="Previous">‹</button><button class="main-play" type="button" data-live-trigger aria-label="Play SunShine live radio">▶</button><button class="round-control" type="button" data-live-control="next" aria-label="Next">›</button></div>
+          <div class="caster-widget-shell" id="casterLivePlayer" aria-label="SunShine live stream player">
+              <div class="cstrEmbed" data-type="newStreamPlayer" data-publicToken="1f6d73a7-7eca-482d-99a1-5d603625f5f8" data-theme="dark" data-color="ffba00" data-channelId="" data-rendered="false">
+                <a href="https://www.caster.fm">Shoutcast Hosting</a>
+                <a href="https://www.caster.fm">Stream Hosting</a>
+                <a href="https://www.caster.fm">Radio Server Hosting</a>
+              </div>
+            </div>
         </article>
       </div>
     </section>
@@ -100,9 +106,8 @@
       </div>
     </footer>
   </div>
-  <audio id="sunshineAudio" preload="none" playsinline></audio>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/radio-config.js?v=stream1"></script>
-  <script src="assets/js/site.js?v=stream1"></script>
+  <script src="https://cdn.cloud.caster.fm/widgets/embed.js"></script>
+  <script src="assets/js/site.js?v=caster1"></script>
 </body>
 </html>
