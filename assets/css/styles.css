@@ -3231,3 +3231,134 @@ main,
 @media (prefers-reduced-motion: reduce) {
   .sunshine-page .page-shell::before { animation:none; }
 }
+
+/* ===== PHASE 3A: MULTI-PAGE FUNCTIONAL POLISH ===== */
+
+.page-live-status {
+  margin: 12px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 207, 74, .34);
+  border-radius: 14px;
+  background: rgba(6, 16, 29, .72);
+  color: #eef4fb;
+  box-shadow: inset 0 0 18px rgba(255, 181, 26, .035);
+}
+
+.page-live-status .online-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: #18e68f;
+  box-shadow: 0 0 10px rgba(24, 230, 143, .55);
+}
+
+.live-dj {
+  border-color: rgba(255, 211, 74, .82) !important;
+  box-shadow:
+    0 0 18px rgba(255, 218, 104, .24),
+    0 0 42px rgba(255, 151, 0, .14),
+    inset 0 0 20px rgba(255, 181, 31, .045);
+}
+
+.card-link,
+.inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  color: #ffd95c;
+  font-weight: 700;
+  text-decoration: none;
+  text-shadow: 0 0 12px rgba(255, 188, 38, .18);
+}
+
+.card-link:hover,
+.inline-link:hover {
+  color: #fff2ad;
+  text-shadow: 0 0 18px rgba(255, 221, 104, .34);
+}
+
+.contact-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.contact-form label {
+  font-weight: 700;
+  color: #f7f9fc;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 199, 45, .32);
+  border-radius: 13px;
+  background: rgba(4, 13, 24, .84);
+  color: #fff;
+  font: inherit;
+  padding: 12px 13px;
+  outline: none;
+  box-shadow:
+    inset 0 0 14px rgba(255, 178, 25, .025),
+    0 0 12px rgba(255, 183, 25, .04);
+}
+
+.contact-form textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: rgba(255, 221, 101, .78);
+  box-shadow:
+    0 0 0 3px rgba(255, 184, 0, .08),
+    0 0 20px rgba(255, 195, 45, .14);
+}
+
+.contact-submit {
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.form-status {
+  min-height: 1.5em;
+  margin: 4px 0 0;
+  color: #dce5ef;
+  line-height: 1.45;
+}
+
+.page-chat .chat-panel {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.page-chat .chat-feed {
+  min-height: 260px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.page-chat .chat-compose {
+  position: sticky;
+  bottom: 12px;
+}
+
+.page-live #player {
+  scroll-margin-top: 90px;
+}
+
+@media (max-width: 900px) {
+  .contact-submit {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .page-chat .chat-compose {
+    position: static;
+  }
+}
