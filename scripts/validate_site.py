@@ -89,10 +89,14 @@ for page_name in PAGES:
     if "assets/css/styles.css?v=phase3a" not in text:
         fail(f"{page_name}: phase3a stylesheet cache key missing")
 
-    if page_name == "index.html":
-        if "assets/js/site.js?v=phase3a" not in text:
-            fail("index.html: shared site.js is not active")
-        if "assets/js/app.js" in text:
+    if page_name in {"index.html", "live-radio.html"}:
+        if "assets/js/radio-config.js?v=stream1" not in text:
+            fail(f"{page_name}: radio-config.js is not active")
+        if "assets/js/site.js?v=stream1" not in text:
+            fail(f"{page_name}: stream-enabled site.js cache key missing")
+        if "sunshineAudio" not in parser.ids:
+            fail(f"{page_name}: live audio element is missing")
+        if page_name == "index.html" and "assets/js/app.js" in text:
             fail("index.html: legacy app.js must not be loaded")
     else:
         if "assets/js/site.js?v=phase3a" not in text:
@@ -122,6 +126,8 @@ for token in [
     "setupChat",
     "setupContactDraft",
     "Europe/Athens",
+    "SUNSHINE_RADIO_CONFIG",
+    "sunshineAudio",
 ]:
     if token not in site_js:
         fail(f"assets/js/site.js: missing functional token '{token}'")
