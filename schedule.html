@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="SunShine Web Radio daily schedule.">
+  <title>Schedule | SunShine Web Radio</title>
+  <link rel="icon" href="assets/sunshine-logo.webp" type="image/webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="sunshine-page page-schedule">
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="index.html" aria-label="SunShine home">
+          <img src="assets/sunshine-logo.webp" alt="SunShine Web Radio logo">
+        </a>
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+          <a href="index.html">Home</a>
+          <a href="live-radio.html">Live Radio</a>
+          <a href="shows.html">Shows</a>
+          <a class="active" href="schedule.html">Schedule</a>
+          <a href="djs.html">DJs</a>
+          <a href="chat.html">Chat</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+        <button class="listen-live top-listen" type="button" data-live-trigger>
+          <span class="play-icon">▶</span><span>Listen Live</span>
+        </button>
+      </div>
+    </header>
+    
+  <main class="subpage-main">
+    <section class="subpage-hero"><div class="container">
+      <img class="hero-logo-small" src="assets/sunshine-logo.webp" alt="SunShine">
+      <h1>Today's <span>Schedule</span></h1>
+      <p>A clear full-day view of the SunShine programme. Final automation will later come from the station system.</p>
+    </div></section>
+    <section class="subpage-section"><div class="container subpage-panel">
+      <h2>Daily <span>Programme</span></h2>
+      <div class="subpage-schedule">
+  <div class="schedule-row live">
+    <div class="status-tag">ON AIR</div>
+    <div class="row-time">10:00 - 12:00</div><div class="row-show">Morning Sunshine</div><div class="row-host">with Alex K.</div>
+  </div>
+  <div class="schedule-row">
+    <div class="row-icon">◷</div>
+    <div class="row-time">12:00 - 14:00</div><div class="row-show">SunShine Hits</div><div class="row-host">with Maria S.</div>
+  </div>
+  <div class="schedule-row">
+    <div class="row-icon">◷</div>
+    <div class="row-time">14:00 - 16:00</div><div class="row-show">Greek Vibes</div><div class="row-host">with Nikos P.</div>
+  </div>
+  <div class="schedule-row">
+    <div class="row-icon">◷</div>
+    <div class="row-time">16:00 - 18:00</div><div class="row-show">Dance Floor</div><div class="row-host">with DJ Chris</div>
+  </div>
+  <div class="schedule-row">
+    <div class="row-icon">◷</div>
+    <div class="row-time">18:00 - 20:00</div><div class="row-show">Retro Time</div><div class="row-host">with Elena D.</div>
+  </div>
+  <div class="schedule-row">
+    <div class="row-icon">◷</div>
+    <div class="row-time">20:00 - 22:00</div><div class="row-show">Laiko & More</div><div class="row-host">with Giorgos M.</div>
+  </div>
+  <div class="schedule-row">
+    <div class="row-icon">◷</div>
+    <div class="row-time">22:00 - 00:00</div><div class="row-show">Night Sessions</div><div class="row-host">with DJ Alex</div>
+  </div></div>
+    </div></section>
+  </main>
+    
+    <footer class="site-footer" id="contact">
+      <div class="footer-eq" aria-hidden="true"></div>
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <img src="assets/sunshine-logo.webp" alt="SunShine">
+          <div><strong>SunShine Web Radio</strong><p>Feel the Music. Feel the Light.</p></div>
+        </div>
+        <div class="footer-column">
+          <h3>Quick Links</h3>
+          <div class="footer-links">
+            <a href="index.html">Home</a><a href="live-radio.html">Live Radio</a>
+            <a href="shows.html">Shows</a><a href="schedule.html">Schedule</a>
+            <a href="djs.html">DJs</a><a href="chat.html">Chat</a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h3>Follow Us</h3>
+          <div class="social-row">
+            <a href="#" aria-label="Facebook">f</a><a href="#" aria-label="Instagram">◎</a>
+            <a href="#" aria-label="TikTok">♪</a><a href="#" aria-label="YouTube">▶</a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h3>Contact Us</h3>
+          <p>SunShine Web Radio</p><p>Worldwide Broadcasting</p><p>Music Has No Borders</p>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <span>© <span id="year"></span> SunShine Web Radio. All rights reserved.</span>
+        <span>Privacy Policy &nbsp;|&nbsp; Terms of Use</span>
+      </div>
+    </footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/site.js"></script>
+</body>
+</html>

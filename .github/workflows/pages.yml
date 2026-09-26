@@ -27,7 +27,18 @@ jobs:
           set -euo pipefail
 
           echo "Checking required files..."
-          for file in             index.html             assets/css/styles.css             assets/js/app.js             assets/sunshine-logo.webp
+          for file in \
+            index.html \
+            live-radio.html \
+            shows.html \
+            schedule.html \
+            djs.html \
+            chat.html \
+            contact.html \
+            assets/css/styles.css \
+            assets/js/app.js \
+            assets/js/site.js \
+            assets/sunshine-logo.webp
           do
             if [[ ! -f "$file" ]]; then
               echo "::error file=$file::Required file is missing"
@@ -57,7 +68,20 @@ jobs:
             exit 1
           fi
 
-          echo "SUNSHINE STATIC SITE VALIDATION: PASS"
+          grep -Fq "PHASE 2A: GLOBAL SUNSHINE BACKGROUND SYSTEM" assets/css/styles.css || {
+            echo "::error file=assets/css/styles.css::Global SunShine background system is missing"
+            exit 1
+          }
+
+          for page in live-radio.html shows.html schedule.html djs.html chat.html contact.html
+          do
+            grep -Fq 'class="sunshine-page' "$page" || {
+              echo "::error file=$page::Shared SunShine page background class is missing"
+              exit 1
+            }
+          done
+
+          echo "SUNSHINE MULTI-PAGE + GLOBAL BACKGROUND VALIDATION: PASS"
 
   deploy:
     runs-on: ubuntu-latest

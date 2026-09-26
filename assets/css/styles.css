@@ -2764,3 +2764,262 @@ main,
     animation: none;
   }
 }
+
+/* ===== PHASE 2A: GLOBAL SUNSHINE BACKGROUND SYSTEM ===== */
+
+/* One shared SunShine light system for Home + every standalone page. */
+.sunshine-page {
+  min-height: 100vh;
+  background: #050b14;
+}
+
+.sunshine-page .page-shell {
+  min-height: 100vh;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background:
+    radial-gradient(ellipse at 4% 8%, rgba(255, 240, 171, .80) 0%, rgba(255, 198, 71, .52) 7%, rgba(255, 157, 18, .28) 19%, transparent 40%),
+    radial-gradient(ellipse at 96% 14%, rgba(255, 178, 39, .40) 0%, rgba(255, 112, 0, .20) 24%, transparent 45%),
+    radial-gradient(ellipse at 5% 42%, rgba(255, 208, 92, .52) 0%, rgba(255, 164, 21, .26) 20%, transparent 45%),
+    radial-gradient(ellipse at 95% 48%, rgba(255, 148, 18, .34) 0%, rgba(255, 103, 0, .16) 26%, transparent 48%),
+    radial-gradient(ellipse at 7% 76%, rgba(255, 216, 104, .44) 0%, rgba(255, 166, 25, .23) 22%, transparent 46%),
+    radial-gradient(ellipse at 94% 82%, rgba(255, 143, 13, .30) 0%, rgba(255, 97, 0, .14) 26%, transparent 46%),
+    linear-gradient(180deg, #0a1421 0%, #07111e 38%, #06101b 72%, #050b14 100%);
+}
+
+.sunshine-page .page-shell::before {
+  content: "";
+  position: fixed;
+  inset: -8%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    repeating-conic-gradient(from 203deg at 5% 10%, rgba(255, 230, 144, .10) 0deg 1.2deg, transparent 1.2deg 8deg),
+    repeating-conic-gradient(from 158deg at 95% 18%, rgba(255, 159, 24, .065) 0deg 1deg, transparent 1deg 9deg),
+    radial-gradient(circle at 9% 16%, rgba(255, 247, 197, .58) 0 1.2%, rgba(255, 198, 72, .22) 5%, transparent 17%),
+    radial-gradient(circle at 90% 28%, rgba(255, 177, 40, .22) 0 1.1%, transparent 11%),
+    radial-gradient(circle at 18% 58%, rgba(255, 221, 121, .18) 0 1.1%, transparent 9%),
+    radial-gradient(circle at 78% 68%, rgba(255, 159, 20, .16) 0 1%, transparent 10%),
+    radial-gradient(circle at 12% 88%, rgba(255, 214, 104, .16) 0 1%, transparent 10%);
+  mix-blend-mode: screen;
+  opacity: .98;
+  filter: blur(1px) saturate(1.08);
+  animation: sunshineGlobalBreath 10s ease-in-out infinite;
+}
+
+.sunshine-page .page-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 7% 25%, rgba(255, 210, 105, .28) 0 7px, transparent 32px),
+    radial-gradient(circle at 15% 32%, rgba(255, 170, 26, .20) 0 11px, transparent 42px),
+    radial-gradient(circle at 27% 19%, rgba(255, 223, 129, .22) 0 6px, transparent 28px),
+    radial-gradient(circle at 72% 22%, rgba(255, 156, 12, .18) 0 9px, transparent 36px),
+    radial-gradient(circle at 88% 36%, rgba(255, 193, 66, .22) 0 8px, transparent 34px),
+    radial-gradient(circle at 12% 64%, rgba(255, 201, 78, .22) 0 10px, transparent 40px),
+    radial-gradient(circle at 83% 72%, rgba(255, 146, 10, .16) 0 12px, transparent 44px),
+    linear-gradient(168deg, transparent 0 35%, rgba(255, 212, 100, .075) 36%, transparent 37% 100%),
+    linear-gradient(12deg, transparent 0 55%, rgba(255, 151, 16, .065) 56%, transparent 57% 100%);
+  mix-blend-mode: screen;
+  opacity: .82;
+}
+
+.sunshine-page .page-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Let the shared sunshine background remain visible behind every page section. */
+.sunshine-page .hero,
+.sunshine-page .dashboard-section,
+.sunshine-page .listen-everywhere,
+.sunshine-page .site-footer,
+.sunshine-page .subpage-main,
+.sunshine-page .subpage-hero,
+.sunshine-page .subpage-section {
+  background:
+    linear-gradient(180deg, rgba(5, 13, 24, .46), rgba(5, 13, 24, .66)) !important;
+  backdrop-filter: blur(2px);
+}
+
+.sunshine-page .site-header {
+  background:
+    linear-gradient(90deg, rgba(255, 190, 47, .08), rgba(4, 11, 21, .92) 24%, rgba(4, 11, 21, .92) 76%, rgba(255, 121, 0, .06));
+  box-shadow:
+    0 7px 26px rgba(0,0,0,.34),
+    0 1px 20px rgba(255, 188, 42, .15);
+}
+
+/* Standalone page layout. */
+.subpage-main {
+  min-height: calc(100vh - 82px);
+  padding: 56px 0 70px;
+}
+
+.subpage-hero {
+  padding: 34px 0 28px;
+  text-align: center;
+}
+
+.subpage-hero .hero-logo-small {
+  width: 150px;
+  margin: 0 auto 18px;
+  filter:
+    drop-shadow(0 0 12px rgba(255, 239, 172, .58))
+    drop-shadow(0 0 36px rgba(255, 182, 32, .34));
+}
+
+.subpage-hero h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 4.6rem);
+  letter-spacing: -.045em;
+  text-shadow:
+    0 0 12px rgba(255, 237, 167, .28),
+    0 0 34px rgba(255, 184, 38, .22),
+    0 0 64px rgba(255, 121, 0, .14);
+}
+
+.subpage-hero h1 span { color: var(--gold-light); }
+
+.subpage-hero p {
+  max-width: 720px;
+  margin: 12px auto 0;
+  color: #e9eef7;
+  line-height: 1.7;
+}
+
+.subpage-section { padding: 20px 0 34px; }
+
+.subpage-panel {
+  border: 1px solid rgba(255, 214, 91, .58);
+  border-radius: var(--radius);
+  padding: 24px;
+  background:
+    radial-gradient(ellipse at 0% 25%, rgba(255, 205, 84, .14), transparent 38%),
+    linear-gradient(180deg, rgba(9, 22, 39, .90), rgba(5, 13, 24, .94));
+  box-shadow:
+    0 22px 54px rgba(0,0,0,.38),
+    0 0 18px rgba(255, 217, 107, .18),
+    0 0 48px rgba(255, 153, 12, .14),
+    inset 0 0 36px rgba(255, 183, 33, .04);
+}
+
+.subpage-panel h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.5rem, 3vw, 2.35rem);
+}
+
+.subpage-panel h2 span { color: var(--gold-light); }
+
+.subpage-panel > p { color: var(--muted); }
+
+.subpage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 20px;
+}
+
+.content-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.content-card {
+  min-height: 150px;
+  padding: 18px;
+  border: 1px solid rgba(255, 203, 60, .34);
+  border-radius: 17px;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(255, 198, 66, .12), transparent 48%),
+    rgba(6, 16, 29, .78);
+  box-shadow:
+    0 0 18px rgba(255, 178, 26, .08),
+    inset 0 0 18px rgba(255, 188, 44, .025);
+}
+
+.content-card h3 { margin: 0 0 8px; }
+.content-card p { margin: 0; color: var(--muted); line-height: 1.55; }
+.content-card strong { color: var(--gold-light); }
+
+.subpage-schedule { display: grid; gap: 8px; margin-top: 18px; }
+.subpage-schedule .schedule-row { min-height: 52px; }
+
+.subpage-dj-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.subpage-dj {
+  padding: 18px;
+  min-height: 190px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 206, 70, .38);
+  background:
+    radial-gradient(circle at 50% 25%, rgba(255, 202, 70, .22), transparent 24%),
+    linear-gradient(180deg, rgba(17, 31, 48, .90), rgba(6, 14, 25, .94));
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+}
+
+.subpage-dj .dj-orb {
+  width: 72px;
+  height: 72px;
+  margin-bottom: auto;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffe078, #ff9e00 52%, #182235 53%);
+  box-shadow: 0 0 28px rgba(255, 177, 19, .24);
+}
+
+.subpage-dj h3 { margin: 16px 0 4px; }
+.subpage-dj p { margin: 0; color: var(--gold-light); font-weight: 700; }
+.subpage-dj small { margin-top: 5px; color: var(--muted); }
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.contact-card {
+  text-align: center;
+  padding: 24px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 207, 77, .34);
+  background: rgba(5, 15, 27, .76);
+}
+
+.contact-card .device-icon { margin: 0 auto 12px; }
+
+@keyframes sunshineGlobalBreath {
+  0%, 100% { opacity: .86; filter: saturate(1.04) brightness(1); }
+  50% { opacity: 1; filter: saturate(1.12) brightness(1.07); }
+}
+
+@media (max-width: 900px) {
+  .subpage-grid,
+  .content-cards,
+  .contact-grid { grid-template-columns: 1fr; }
+  .subpage-dj-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+
+  .sunshine-page .page-shell::before { opacity: .72; }
+  .sunshine-page .page-shell::after { opacity: .56; }
+}
+
+@media (max-width: 520px) {
+  .subpage-main { padding-top: 28px; }
+  .subpage-dj-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sunshine-page .page-shell::before { animation: none; }
+}
