@@ -2428,3 +2428,193 @@ body::before {
     width: 18%;
   }
 }
+
+/* ===== PHASE 1H: FULL-SITE LUMINOUS VEIL ===== */
+
+/*
+  Final sitewide luminosity pass.
+  Keeps the current layout intact and adds a continuous warm SunShine glow
+  across the entire page, not only inside individual cards.
+*/
+
+html {
+  background:
+    radial-gradient(ellipse at 10% 8%, rgba(255, 215, 116, .18), transparent 28rem),
+    radial-gradient(ellipse at 90% 16%, rgba(255, 126, 0, .12), transparent 30rem),
+    linear-gradient(180deg, #08111d 0%, #06101b 48%, #050b14 100%);
+}
+
+body {
+  box-shadow:
+    inset 0 0 120px rgba(255, 182, 30, .035),
+    inset 0 0 220px rgba(255, 119, 0, .025);
+}
+
+.page-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.page-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 8% 14%, rgba(255, 218, 126, .16) 0%, rgba(255, 172, 26, .10) 22%, transparent 48%),
+    radial-gradient(ellipse at 92% 18%, rgba(255, 130, 0, .11) 0%, rgba(255, 111, 0, .05) 28%, transparent 52%),
+    radial-gradient(ellipse at 10% 48%, rgba(255, 194, 67, .13) 0%, rgba(255, 151, 0, .07) 24%, transparent 52%),
+    radial-gradient(ellipse at 90% 52%, rgba(255, 117, 0, .09) 0%, rgba(255, 100, 0, .04) 26%, transparent 50%),
+    radial-gradient(ellipse at 12% 82%, rgba(255, 205, 87, .12) 0%, rgba(255, 158, 0, .06) 26%, transparent 54%),
+    radial-gradient(ellipse at 88% 86%, rgba(255, 115, 0, .08) 0%, rgba(255, 98, 0, .035) 24%, transparent 50%);
+  filter: blur(22px);
+  opacity: .98;
+}
+
+.page-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255, 219, 126, .025), transparent 18%, transparent 82%, rgba(255, 127, 0, .02)),
+    linear-gradient(180deg, rgba(255, 225, 148, .018), transparent 24%, transparent 76%, rgba(255, 122, 0, .018));
+  mix-blend-mode: screen;
+}
+
+/* Carry the same glow across every major horizontal band */
+.site-header,
+.hero,
+.dashboard-section,
+.listen-everywhere,
+.site-footer {
+  box-shadow:
+    inset 0 0 70px rgba(255, 187, 43, .05),
+    inset 0 0 150px rgba(255, 121, 0, .025);
+}
+
+/* Stronger ambient glow around the principal frames */
+.player-card,
+.panel,
+.chat-panel,
+.device-visual {
+  box-shadow:
+    0 22px 52px rgba(0, 0, 0, .42),
+    0 0 0 1px rgba(255, 228, 126, .15),
+    0 0 20px rgba(255, 216, 102, .24),
+    0 0 44px rgba(255, 174, 31, .20),
+    0 0 78px rgba(255, 120, 0, .16),
+    inset 0 0 42px rgba(255, 184, 36, .06);
+}
+
+/* Soft glow on smaller components */
+.schedule-row,
+.dj-card,
+.message-bubble,
+.device-options article,
+.chat-status > span,
+.outline-button,
+.social-row a {
+  box-shadow:
+    0 0 10px rgba(255, 221, 109, .09),
+    0 0 22px rgba(255, 165, 13, .07),
+    inset 0 0 14px rgba(255, 185, 38, .028);
+}
+
+/* Gold text should look illuminated, not flat */
+.hero-brand h1,
+.section-heading h2,
+.chat-title-row h2,
+.footer-column h3,
+.dj-info p {
+  text-shadow:
+    0 0 9px rgba(255, 232, 151, .20),
+    0 0 20px rgba(255, 196, 66, .16),
+    0 0 38px rgba(255, 129, 0, .09);
+}
+
+/* Active controls get an extra luminous halo */
+.listen-live,
+.main-play,
+.send-button,
+.main-nav a.active,
+.main-nav a:hover {
+  filter: brightness(1.05);
+  box-shadow:
+    0 0 12px rgba(255, 236, 166, .28),
+    0 0 26px rgba(255, 202, 77, .24),
+    0 0 52px rgba(255, 133, 0, .16),
+    inset 0 1px rgba(255,255,255,.78);
+}
+
+/* Add luminous divider lines between large page zones */
+.dashboard-section,
+.listen-everywhere,
+.site-footer {
+  border-top: 1px solid rgba(255, 210, 88, .18);
+}
+
+.dashboard-section {
+  box-shadow:
+    inset 0 0 85px rgba(255, 190, 46, .045),
+    0 -1px 18px rgba(255, 178, 21, .06);
+}
+
+.listen-everywhere {
+  box-shadow:
+    inset 0 0 85px rgba(255, 190, 46, .04),
+    0 -1px 18px rgba(255, 178, 21, .055);
+}
+
+.site-footer {
+  box-shadow:
+    inset 0 0 85px rgba(255, 190, 46, .04),
+    0 -1px 20px rgba(255, 178, 21, .065);
+}
+
+/* Slow breathing effect over the full page glow */
+@keyframes sunshinePageGlow {
+  0%, 100% {
+    opacity: .90;
+    filter: blur(22px) brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(24px) brightness(1.06);
+  }
+}
+
+.page-shell::before {
+  animation: sunshinePageGlow 8s ease-in-out infinite;
+}
+
+@media (max-width: 900px) {
+  .page-shell::before {
+    opacity: .82;
+    filter: blur(18px);
+  }
+
+  .page-shell::after {
+    opacity: .72;
+  }
+
+  .player-card,
+  .panel,
+  .chat-panel,
+  .device-visual {
+    box-shadow:
+      0 18px 42px rgba(0,0,0,.40),
+      0 0 0 1px rgba(255, 225, 116, .11),
+      0 0 16px rgba(255, 205, 88, .18),
+      0 0 34px rgba(255, 166, 22, .13),
+      inset 0 0 30px rgba(255, 181, 34, .04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-shell::before {
+    animation: none;
+  }
+}
