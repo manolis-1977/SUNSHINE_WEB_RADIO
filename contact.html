@@ -41,16 +41,34 @@
     <section class="subpage-hero"><div class="container">
       <img class="hero-logo-small" src="assets/sunshine-logo.webp" alt="SunShine">
       <h1>Contact <span>SunShine</span></h1>
-      <p>For listeners, presenters, music and future collaborations. Final public contact details will be published before launch.</p>
+      <p>The page is ready for the official SunShine contact channel. Until the delivery endpoint is configured, you can save a private draft on this device or open the community chat.</p>
     </div></section>
-    <section class="subpage-section"><div class="container subpage-panel">
-      <h2>Stay <span>Connected</span></h2>
-      <div class="contact-grid">
-        <article class="contact-card"><div class="device-icon">✉</div><h3>Contact</h3><p>Official contact channel will be published before launch.</p></article>
-        <article class="contact-card"><div class="device-icon">♪</div><h3>Music</h3><p>Music and programme enquiries will have a dedicated route.</p></article>
-        <article class="contact-card"><div class="device-icon">◎</div><h3>Community</h3><p>Social and community channels will be linked here.</p></article>
+    <section class="subpage-section">
+      <div class="container subpage-grid">
+        <article class="subpage-panel">
+          <h2>Stay <span>Connected</span></h2>
+          <div class="contact-grid">
+            <article class="contact-card"><div class="device-icon">✉</div><h3>Contact</h3><p>Official delivery address will be connected before public launch.</p></article>
+            <article class="contact-card"><div class="device-icon">♪</div><h3>Music</h3><p>Music and programme enquiries will use the official SunShine contact channel.</p></article>
+            <article class="contact-card"><div class="device-icon">◎</div><h3>Community</h3><p><a class="inline-link" href="chat.html">Open SunShine Chat →</a></p></article>
+          </div>
+        </article>
+        <article class="subpage-panel">
+          <h2>Message <span>Draft</span></h2>
+          <p>No message is transmitted yet. This form safely keeps a draft in your own browser until the official delivery backend is configured.</p>
+          <form class="contact-form" id="contactForm">
+            <label for="contactName">Name</label>
+            <input id="contactName" name="name" type="text" maxlength="80" autocomplete="name" required>
+            <label for="contactEmail">Email</label>
+            <input id="contactEmail" name="email" type="email" maxlength="160" autocomplete="email" required>
+            <label for="contactMessage">Message</label>
+            <textarea id="contactMessage" name="message" maxlength="1200" rows="7" required></textarea>
+            <button class="send-button contact-submit" type="submit"><span>✦</span> Save Draft</button>
+            <p class="form-status" id="contactFormStatus" aria-live="polite"></p>
+          </form>
+        </article>
       </div>
-    </div></section>
+    </section>
   </main>
     
     <footer class="site-footer" id="contact">
@@ -87,6 +105,6 @@
     </footer>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/site.js"></script>
+  <script src="assets/js/site.js?v=phase3a"></script>
 </body>
 </html>
