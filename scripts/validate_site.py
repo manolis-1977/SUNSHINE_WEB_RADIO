@@ -90,12 +90,14 @@ for page_name in PAGES:
         fail(f"{page_name}: phase3a stylesheet cache key missing")
 
     if page_name in {"index.html", "live-radio.html"}:
-        if "assets/js/radio-config.js?v=stream1" not in text:
-            fail(f"{page_name}: radio-config.js is not active")
-        if "assets/js/site.js?v=stream1" not in text:
-            fail(f"{page_name}: stream-enabled site.js cache key missing")
-        if "sunshineAudio" not in parser.ids:
-            fail(f"{page_name}: live audio element is missing")
+        if "cdn.cloud.caster.fm/widgets/embed.js" not in text:
+            fail(f"{page_name}: Caster.fm widget script is not active")
+        if "assets/js/site.js?v=caster1" not in text:
+            fail(f"{page_name}: Caster-enabled site.js cache key missing")
+        if "casterLivePlayer" not in parser.ids:
+            fail(f"{page_name}: Caster.fm live player container is missing")
+        if 'data-publicToken="1f6d73a7-7eca-482d-99a1-5d603625f5f8"' not in text:
+            fail(f"{page_name}: Caster.fm public token is missing")
         if page_name == "index.html" and "assets/js/app.js" in text:
             fail("index.html: legacy app.js must not be loaded")
     else:
@@ -126,8 +128,7 @@ for token in [
     "setupChat",
     "setupContactDraft",
     "Europe/Athens",
-    "SUNSHINE_RADIO_CONFIG",
-    "sunshineAudio",
+    "casterLivePlayer",
 ]:
     if token not in site_js:
         fail(f"assets/js/site.js: missing functional token '{token}'")
@@ -137,6 +138,7 @@ for marker in [
     "PHASE 2B: FINAL IMAGE 1-2 VISUAL LOCK",
     "PHASE 2C: STRONGER GLOW / BRIGHTNESS PASS",
     "PHASE 3A: MULTI-PAGE FUNCTIONAL POLISH",
+    "PHASE 3B: CASTER.FM LIVE STREAM PLAYER",
 ]:
     if marker not in css:
         fail(f"assets/css/styles.css: missing marker '{marker}'")
