@@ -26,6 +26,7 @@ const SUNSHINE_INITIAL_MESSAGES = [
 
 const CHAT_STORAGE_KEY = "sunshine_chat_preview_v1";
 const CONTACT_STORAGE_KEY = "sunshine_contact_draft_v1";
+const SUNSHINE_RADIO_CONFIG = window.SUNSHINE_RADIO_CONFIG || { streamUrl: "", metadataUrl: "" };
 
 const menuToggle = document.getElementById("menuToggle");
 const mainNav = document.getElementById("mainNav");
@@ -236,23 +237,81 @@ function setupEmojiButtons() {
 
 function setupLiveActions() {
   const onLivePage = document.body.classList.contains("page-live");
+  const audio = document.getElementById("sunshineAudio");
+  const streamUrl = String(SUNSHINE_RADIO_CONFIG.streamUrl || "").trim();
+  const triggers = [...document.querySelectorAll("[data-live-trigger]")];
 
-  document.querySelectorAll("[data-live-trigger]").forEach(button => {
+  function syncPlayButtons(isPlaying) {
+    triggers.forEach(button => {
+      button.setAttribute("aria-pressed", String(isPlaying));
+      const icon = button.querySelector(".play-icon");
+      if (icon) icon.textContent = isPlaying ? "❚❚" : "▶";
+      if (button.classList.contains("main-play")) {
+        button.textContent = isPlaying ? "❚❚" : "▶";
+      }
+    });
+  }
+
+  async function startLiveStream() {
+    if (!audio) {
+      window.location.href = "live-radio.html#player";
+      return;
+    }
+
+    if (!streamUrl) {
+      showToast("The SunShine streaming server is not configured yet.");
+      return;
+    }
+
+    if (!audio.paused) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      syncPlayButtons(false);
+      showToast("SunShine Live paused.");
+      return;
+    }
+
+    try {
+      audio.src = streamUrl;
+      audio.load();
+      await audio.play();
+      syncPlayButtons(true);
+      showToast("SunShine Live is playing.");
+    } catch (error) {
+      syncPlayButtons(false);
+      showToast("Could not start the live stream. Check the streaming server connection.");
+      console.error("SunShine stream playback failed", error);
+    }
+  }
+
+  triggers.forEach(button => {
     button.addEventListener("click", event => {
       event.preventDefault();
-      if (!onLivePage) {
+      if (!audio && !onLivePage) {
         window.location.href = "live-radio.html#player";
         return;
       }
 
-      document.getElementById("player")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      showToast("SunShine Live player is ready. The actual audio stream will activate when the Jazzler stream endpoint is connected.");
+      if (onLivePage) {
+        document.getElementById("player")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      startLiveStream();
     });
   });
 
+  if (audio) {
+    audio.addEventListener("playing", () => syncPlayButtons(true));
+    audio.addEventListener("pause", () => syncPlayButtons(false));
+    audio.addEventListener("error", () => {
+      syncPlayButtons(false);
+      if (streamUrl) showToast("SunShine stream connection was interrupted.");
+    });
+  }
+
   document.querySelectorAll("[data-live-control]").forEach(button => {
     button.addEventListener("click", () => {
-      showToast("SunShine is a continuous live stream. Track navigation will be connected only if Jazzler exposes that control.");
+      showToast("SunShine is one continuous live radio stream; previous/next track control is not available.");
     });
   });
 }
