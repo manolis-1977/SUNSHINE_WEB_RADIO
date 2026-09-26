@@ -36,6 +36,7 @@ jobs:
             chat.html \
             contact.html \
             assets/css/styles.css \
+            assets/sunshine-radiance.svg \
             assets/js/app.js \
             assets/js/site.js \
             assets/sunshine-logo.webp
@@ -81,7 +82,11 @@ jobs:
             }
           done
 
-          echo "SUNSHINE MULTI-PAGE + GLOBAL BACKGROUND VALIDATION: PASS"
+          grep -Fq "PHASE 2B: FINAL IMAGE 1-2 VISUAL LOCK" assets/css/styles.css || {
+            echo "::error file=assets/css/styles.css::Final Image 1-2 visual lock is missing"
+            exit 1
+          }
+          echo "SUNSHINE MULTI-PAGE + FINAL IMAGE 1-2 VISUAL VALIDATION: PASS"
 
   deploy:
     runs-on: ubuntu-latest
