@@ -3057,3 +3057,9 @@ main,
 .sunshine-page .subpage-hero{padding-top:56px;}
 @media(max-width:1000px){.sunshine-page .hero-grid{grid-template-columns:1fr;gap:28px}.sunshine-page .hero{min-height:auto;padding:46px 0}.sunshine-page .player-card{max-width:720px;margin-inline:auto}}
 @media(max-width:700px){.sunshine-page .page-shell{background:linear-gradient(180deg,rgba(4,9,16,.16),rgba(4,9,16,.28)),url("../sunshine-radiance.svg") center top/auto 100% scroll no-repeat!important}.sunshine-page .hero-logo{width:min(360px,92%)}.sunshine-page .hero-brand h1{font-size:clamp(2.2rem,10vw,3.6rem)}}
+
+/* PHASE 2B LOGO BLEND */
+.page-home .hero-logo{
+  mix-blend-mode:multiply;
+  filter:brightness(1.22) saturate(1.45) contrast(1.05) drop-shadow(0 0 18px rgba(255,223,118,.55)) drop-shadow(0 0 52px rgba(255,153,0,.32));
+}
