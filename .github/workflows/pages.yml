@@ -39,7 +39,8 @@ jobs:
             assets/sunshine-radiance.svg \
             assets/js/app.js \
             assets/js/site.js \
-            assets/sunshine-logo.webp
+            assets/sunshine-logo.webp \
+            scripts/validate_site.py
           do
             if [[ ! -f "$file" ]]; then
               echo "::error file=$file::Required file is missing"
@@ -87,6 +88,14 @@ jobs:
             exit 1
           }
           echo "SUNSHINE MULTI-PAGE + FINAL IMAGE 1-2 VISUAL VALIDATION: PASS"
+
+      - name: Validate JavaScript syntax
+        run: |
+          node --check assets/js/site.js
+          node --check assets/js/app.js
+
+      - name: Run Phase 3A site validator
+        run: python3 scripts/validate_site.py
 
   deploy:
     runs-on: ubuntu-latest
