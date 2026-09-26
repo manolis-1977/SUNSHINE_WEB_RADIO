@@ -3362,3 +3362,39 @@ main,
     position: static;
   }
 }
+
+
+/* ===== PHASE 3B: CASTER.FM LIVE STREAM PLAYER ===== */
+.caster-widget-shell {
+  position: relative;
+  z-index: 2;
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid rgba(255, 210, 76, .58);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(7, 17, 30, .96), rgba(4, 11, 21, .98));
+  box-shadow:
+    0 0 18px rgba(255, 220, 110, .16),
+    0 0 38px rgba(255, 156, 10, .12),
+    inset 0 1px rgba(255,255,255,.035);
+  scroll-margin-top: 104px;
+}
+
+.caster-widget-shell .cstrEmbed {
+  width: 100%;
+  min-height: 118px;
+}
+
+.caster-widget-shell iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+  border: 0 !important;
+  border-radius: 12px;
+}
+
+@media (max-width: 700px) {
+  .caster-widget-shell {
+    padding: 9px;
+    border-radius: 14px;
+  }
+}
