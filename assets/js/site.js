@@ -630,9 +630,10 @@ async function renderRemoteChat(feed) {
       feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>No public messages yet. Be the first to say hello.</p></div>';
       return;
     }
-    feed.innerHTML = messages.map(messageMarkup).join("");
-    // Newest messages are rendered first by the API. Keep the feed pinned to the top.
-    feed.scrollTop = 0;
+    const chronologicalMessages = [...messages].reverse();
+    feed.innerHTML = chronologicalMessages.map(messageMarkup).join("");
+    // The API returns newest first; display oldest at the top and newest at the bottom.
+    feed.scrollTop = feed.scrollHeight;
   } catch {
     feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>Chat messages are temporarily unavailable.</p></div>';
   }
