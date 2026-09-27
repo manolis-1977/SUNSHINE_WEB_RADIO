@@ -6,7 +6,7 @@
 <link rel="icon" href="../assets/sunshine-logo-transparent.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=playmode1">
+<link rel="stylesheet" href="admin.css?v=lifestyle1">
 </head><body class="admin-dashboard">
 <div class="admin-shell">
 <header class="admin-topbar">
@@ -164,6 +164,29 @@
   <p class="form-status" id="status_chat"></p>
 </section>
 
+<section class="admin-card full cms-panel" id="lifestyleAdminPanel">
+  <div class="cms-head"><div><h2>Life Style</h2><p>Manage the Life Style page and its content feeds.</p></div><div class="admin-actions"><button class="ghost-btn" id="refreshLifestyleAll" type="button">Refresh Now</button><button class="primary-btn" type="button" data-save="lifestyle">Save Page</button></div></div>
+  <div class="cms-form-grid">
+    <label class="toggle-line"><input id="lifestyle_enabled" type="checkbox"> Enabled</label>
+    <label>Title<input id="lifestyle_title"></label>
+    <label>Subtitle<input id="lifestyle_subtitle"></label>
+    <label>Max articles<input id="lifestyle_maxArticles" type="number" min="1" max="200"></label>
+    <label class="toggle-line"><input id="lifestyle_showImages" type="checkbox"> Show images</label>
+    <label class="toggle-line"><input id="lifestyle_showSource" type="checkbox"> Show source</label>
+    <label class="toggle-line"><input id="lifestyle_showDate" type="checkbox"> Show date</label>
+    <label class="toggle-line"><input id="lifestyle_openLinksNewTab" type="checkbox"> Open links in new tab</label>
+    <label>Empty message<input id="lifestyle_emptyMessage"></label>
+  </div>
+  <p class="form-status" id="status_lifestyle"></p>
+  <div class="lifestyle-admin-section">
+    <div class="cms-head compact"><div><h3>Sources</h3></div><button class="ghost-btn" id="addLifestyleSource" type="button">+ Add Source</button></div>
+    <div id="lifestyleSourcesEditor"></div><p class="form-status" id="lifestyleSourceStatus"></p>
+  </div>
+  <div class="lifestyle-admin-section">
+    <div class="cms-head compact"><div><h3>Collected Articles</h3></div><button class="ghost-btn" id="reloadLifestyleAdmin" type="button">Reload</button></div>
+    <div id="lifestyleArticlesEditor"></div>
+  </div>
+</section>
 <section class="admin-card full"><h2>Change Password</h2>
 <form class="change-password" id="passwordForm">
 <input id="currentPassword" type="password" autocomplete="current-password" placeholder="Current password" required>
@@ -172,5 +195,5 @@
 </form><p id="passwordStatus" class="form-status" aria-live="polite"></p>
 </section>
 </div></main></div>
-<script src="admin.js?v=playmode1"></script>
+<script src="admin.js?v=lifestyle1"></script>
 </body></html>
