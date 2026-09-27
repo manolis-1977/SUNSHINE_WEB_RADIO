@@ -3832,23 +3832,24 @@ main,
   .chat-user-bar{align-items:flex-start;flex-direction:column}
 }
 
-
-/* ===== CHAT ONE-COLUMN HARD LOCK ===== */
+/* ===== CHAT ONE-COLUMN + LIVE INTERNAL SCROLL LOCK ===== */
 .chat-feed,
 .page-live .live-chat-panel .chat-feed,
 .page-chat .chat-feed {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) !important;
-  grid-auto-flow: row !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
   gap: 10px !important;
-  align-content: start;
+  align-items: stretch !important;
+  align-content: initial !important;
 }
 
 .chat-message,
 .page-live .live-chat-panel .chat-message,
 .page-chat .chat-message {
-  width: 100%;
-  max-width: 100%;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
   gap: 9px;
@@ -3863,4 +3864,29 @@ main,
 .message-bubble {
   width: fit-content;
   max-width: 100%;
+}
+
+@media (min-width: 1101px) {
+  .page-live .live-chat-panel {
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .page-live .live-chat-panel .chat-heading,
+  .page-live .live-chat-panel .chat-login-panel,
+  .page-live .live-chat-panel .chat-user-bar,
+  .page-live .live-chat-panel .chat-compose {
+    flex: 0 0 auto;
+  }
+
+  .page-live .live-chat-panel .chat-feed {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 5px;
+  }
 }
