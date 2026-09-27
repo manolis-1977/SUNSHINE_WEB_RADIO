@@ -4135,3 +4135,78 @@ main,
     line-height: 1.34 !important;
   }
 }
+
+
+/* ===== LIVE CHAT TYPOGRAPHY READABILITY V2 ===== */
+@media (min-width: 761px) {
+  .page-live .live-chat-panel .chat-title-row h2 {
+    font-size: 1.12rem !important;
+    line-height: 1.12 !important;
+  }
+
+  .page-live .live-chat-panel .chat-heading p {
+    font-size: .76rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .page-live .live-chat-panel .chat-status {
+    font-size: .72rem !important;
+  }
+
+  .page-live .live-chat-panel .chat-status > span {
+    font-size: .68rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .page-live .live-chat-panel .chat-user-bar {
+    font-size: .84rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .page-live .live-chat-panel .chat-logout {
+    font-size: .76rem !important;
+  }
+
+  .page-live .live-chat-panel .message-meta {
+    font-size: .92rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 3px !important;
+  }
+
+  .page-live .live-chat-panel .message-meta strong {
+    font-weight: 800;
+  }
+
+  .page-live .live-chat-panel .message-bubble {
+    font-size: 1.04rem !important;
+    line-height: 1.38 !important;
+    padding: 6px 9px !important;
+  }
+
+  .page-live .live-chat-panel .chat-compose input {
+    font-size: 1rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .page-live .live-chat-panel .emoji-button,
+  .page-live .live-chat-panel .send-button {
+    font-size: .98rem !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-live .live-chat-panel .message-meta {
+    font-size: .86rem !important;
+  }
+
+  .page-live .live-chat-panel .message-bubble {
+    font-size: 1rem !important;
+    line-height: 1.38 !important;
+  }
+
+  .page-live .live-chat-panel .chat-user-bar,
+  .page-live .live-chat-panel .chat-compose input,
+  .page-live .live-chat-panel .send-button {
+    font-size: .95rem !important;
+  }
+}
