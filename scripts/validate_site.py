@@ -185,7 +185,7 @@ if "sessionStorage" not in admin_js:
     fail("admin/admin.js: session-only auth storage missing")
 if "saveContent" not in admin_js or "scheduleEditor" not in admin_dashboard:
     fail("admin/dashboard.html: CMS panels missing")
-for token in ["Home Advertisements", "data-save=\"ads\"", "data-save=\"live\"", "data-save=\"chat\"", "live_defaultPlaybackMode"]:
+for token in ["Home Advertisements", "data-save=\"ads\"", "data-save=\"live\"", "data-save=\"chat\"", "live_defaultPlaybackMode", "lifestyleAdminPanel", "lifestyleSourcesEditor", "refreshLifestyleAll"]:
     if token not in admin_dashboard:
         fail(f"admin/dashboard.html: missing control token '{token}'")
 if "service_role" in admin_js.lower() or "password_hash" in admin_js.lower():
@@ -209,6 +209,9 @@ for token in [
     "SUNSHINE_PLAYBACK_MODE_KEY",
     "setupPlaybackMode",
     "tryStartCasterPlayback",
+    "SUNSHINE_LIFESTYLE_API",
+    "loadLifestyleArticles",
+    "renderLifestyle",
 ]:
     if token not in site_js:
         fail(f"assets/js/site.js: missing functional token '{token}'")
@@ -223,6 +226,7 @@ for marker in [
     "PHASE 4: ADMIN-CONTROLLED ADS + LIVE CHAT RELOCATION",
     "TRANSPARENT PNG LOGO LOCK",
     "PLAYER AUTO / MANUAL MODE",
+    "LIFE STYLE PUBLIC PAGE",
 ]:
     if marker not in css:
         fail(f"assets/css/styles.css: missing marker '{marker}'")
