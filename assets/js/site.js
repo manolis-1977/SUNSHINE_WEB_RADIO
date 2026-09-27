@@ -266,6 +266,159 @@ function applyPublicContent() {
   if (desc && seo.description) desc.content = seo.description;
 }
 
+async function loadLifestyleArticles() {
+  if (!document.body.classList.contains("page-lifestyle")) return;
+  const status = document.getElementById("lifestyleStatus");
+  try {
+    const cfg = SUNSHINE_PUBLIC_CONTENT.lifestyle || {};
+    const limit = Math.max(1, Math.min(200, Number(cfg.maxArticles || 48)));
+    const response = await fetch(SUNSHINE_LIFESTYLE_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "public", limit }),
+      cache: "no-store"
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "LIFESTYLE_LOAD_FAILED");
+    SUNSHINE_LIFESTYLE_ARTICLES = Array.isArray(data.articles) ? data.articles : [];
+    renderLifestyle();
+  } catch (error) {
+    console.warn("Life Style feed unavailable.", error);
+    if (status) status.textContent = "Life Style stories are temporarily unavailable.";
+  }
+}
+
+function lifestyleDate(value) {
+  if (!value) return "";
+  try {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit"
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
+function renderLifestyle(category = "All") {
+  const grid = document.getElementById("lifestyleGrid");
+  const filters = document.getElementById("lifestyleFilters");
+  const status = document.getElementById("lifestyleStatus");
+  if (!grid || !filters) return;
+
+  const cfg = SUNSHINE_PUBLIC_CONTENT.lifestyle || {};
+  const categories = ["All", ...new Set(SUNSHINE_LIFESTYLE_ARTICLES.map(a => a.category || "Lifestyle"))];
+  filters.replaceChildren();
+
+  categories.forEach(name => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "lifestyle-filter" + (name === category ? " active" : "");
+    button.textContent = name;
+    button.addEventListener("click", () => renderLifestyle(name));
+    filters.appendChild(button);
+  });
+
+  const visible = category === "All"
+    ? SUNSHINE_LIFESTYLE_ARTICLES
+    : SUNSHINE_LIFESTYLE_ARTICLES.filter(a => (a.category || "Lifestyle") === category);
+
+  if (status) {
+    status.textContent = visible.length
+      ? visible.length + " fresh " + (visible.length === 1 ? "story" : "stories") + " from selected sources."
+      : (cfg.emptyMessage || "New stories are being collected. Check back shortly.");
+  }
+
+  grid.replaceChildren();
+
+  if (!visible.length) {
+    const empty = document.createElement("div");
+    empty.className = "chat-empty-state lifestyle-empty";
+    const strong = document.createElement("strong");
+    strong.textContent = "SunShine Life Style";
+    const p = document.createElement("p");
+    p.textContent = cfg.emptyMessage || "New stories are being collected. Check back shortly.";
+    empty.append(strong, p);
+    grid.appendChild(empty);
+    return;
+  }
+
+  visible.forEach(article => {
+    const card = document.createElement("article");
+    card.className = "lifestyle-card" + (article.pinned ? " pinned" : "");
+
+    const mediaLink = document.createElement("a");
+    mediaLink.className = "lifestyle-media";
+    mediaLink.href = safeHttpUrl(article.article_url) || "#";
+    if (cfg.openLinksNewTab !== false) {
+      mediaLink.target = "_blank";
+      mediaLink.rel = "noopener noreferrer";
+    }
+
+    const imageUrl = safeHttpUrl(article.image_url);
+    if (cfg.showImages !== false && imageUrl) {
+      const img = document.createElement("img");
+      img.src = imageUrl;
+      img.alt = "";
+      img.loading = "lazy";
+      mediaLink.appendChild(img);
+    } else {
+      const fallback = document.createElement("div");
+      fallback.className = "lifestyle-image-fallback";
+      fallback.textContent = "☀";
+      mediaLink.appendChild(fallback);
+    }
+
+    const body = document.createElement("div");
+    body.className = "lifestyle-card-body";
+
+    const meta = document.createElement("div");
+    meta.className = "lifestyle-meta";
+    if (cfg.showSource !== false && article.source_name) {
+      const source = document.createElement("span");
+      source.textContent = article.source_name;
+      meta.appendChild(source);
+    }
+    if (cfg.showDate !== false && article.published_at) {
+      const time = document.createElement("time");
+      time.dateTime = article.published_at;
+      time.textContent = lifestyleDate(article.published_at);
+      meta.appendChild(time);
+    }
+
+    const title = document.createElement("h3");
+    const titleLink = document.createElement("a");
+    titleLink.href = safeHttpUrl(article.article_url) || "#";
+    titleLink.textContent = article.title || "";
+    if (cfg.openLinksNewTab !== false) {
+      titleLink.target = "_blank";
+      titleLink.rel = "noopener noreferrer";
+    }
+    title.appendChild(titleLink);
+
+    body.append(meta, title);
+
+    if (article.excerpt) {
+      const excerpt = document.createElement("p");
+      excerpt.textContent = article.excerpt;
+      body.appendChild(excerpt);
+    }
+
+    const read = document.createElement("a");
+    read.className = "card-link";
+    read.href = safeHttpUrl(article.article_url) || "#";
+    read.textContent = "Read original story →";
+    if (cfg.openLinksNewTab !== false) {
+      read.target = "_blank";
+      read.rel = "noopener noreferrer";
+    }
+    body.appendChild(read);
+
+    card.append(mediaLink, body);
+    grid.appendChild(card);
+  });
+}
+
 function renderShows() {
   const root = document.getElementById("showsGrid");
   if (!root || !SUNSHINE_SHOWS.length) return;
@@ -706,6 +859,7 @@ async function bootstrapSunShine() {
   renderSchedules();
   renderDjs();
   renderShows();
+  await loadLifestyleArticles();
   setupChat("chatFeed", "chatForm", "chatInput");
   setupChat("chatFeedLive", "chatFormLive", "chatInputLive");
   setupChat("chatFeedPage", "chatFormPage", "chatInputPage");
