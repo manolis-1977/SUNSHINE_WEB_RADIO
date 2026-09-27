@@ -136,13 +136,18 @@ for page_name in PAGES:
     if 'class="sunshine-page' not in text:
         fail(f"{page_name}: missing shared sunshine-page class")
 
-    expected_css = "assets/css/styles.css?v=compact-subpages1"
-    expected_js = "assets/js/site.js?v=compact-subpages1"
+    expected_css = "assets/css/styles.css?v=securechat1"
+    expected_js = "assets/js/site.js?v=securechat1"
 
     if expected_css not in text:
         fail(f"{page_name}: expected stylesheet cache key missing")
     if expected_js not in text:
         fail(f"{page_name}: expected site.js cache key missing")
+
+    if page_name in {"live-radio.html", "chat.html"}:
+        for token in ["data-chat-login", "data-chat-login-form", "data-chat-username", "data-chat-user-bar", "data-chat-logout"]:
+            if token not in text:
+                fail(f"{page_name}: missing secure chat login control '{token}'")
 
     if page_name in {"index.html", "live-radio.html"}:
         for token in ['data-playback-mode="auto"', 'data-playback-mode="manual"', "data-playback-status"]:
@@ -194,11 +199,17 @@ if "sessionStorage" not in admin_js:
     fail("admin/admin.js: session-only auth storage missing")
 if "saveContent" not in admin_js or "scheduleEditor" not in admin_dashboard:
     fail("admin/dashboard.html: CMS panels missing")
-for token in ["Home Advertisements", "data-save=\"ads\"", "data-save=\"live\"", "data-save=\"chat\"", "live_defaultPlaybackMode", "lifestyleAdminPanel", "lifestyleSourcesEditor", "refreshLifestyleAll"]:
+for token in ["Home Advertisements", "data-save=\"ads\"", "data-save=\"live\"", "data-save=\"chat\"", "live_defaultPlaybackMode", "lifestyleAdminPanel", "lifestyleSourcesEditor", "refreshLifestyleAll", "chatModerationPanel", "chatUsersAdmin", "chatMessagesAdmin", "reloadChatModeration"]:
     if token not in admin_dashboard:
         fail(f"admin/dashboard.html: missing control token '{token}'")
 if "service_role" in admin_js.lower() or "password_hash" in admin_js.lower():
     fail("admin/admin.js: server-side secret leaked to public client")
+for token in ["CHAT_API", "chatAdminApi", "loadChatModeration", "adminDeleteMessage", "adminUserStatus", "adminReleaseUsername"]:
+    if token not in admin_js:
+        fail(f"admin/admin.js: missing chat moderation token '{token}'")
+admin_css = (ROOT / "admin/admin.css").read_text(encoding="utf-8")
+if "CHAT MODERATION ADMIN" not in admin_css:
+    fail("admin/admin.css: missing chat moderation styles")
 
 site_js = (ROOT / "assets/js/site.js").read_text(encoding="utf-8")
 for token in [
@@ -221,6 +232,11 @@ for token in [
     "SUNSHINE_LIFESTYLE_API",
     "loadLifestyleArticles",
     "renderLifestyle",
+    "SUNSHINE_CHAT_API",
+    "CHAT_USERNAME_KEY",
+    "CHAT_OWNER_TOKEN_KEY",
+    "claimChatUsername",
+    "renderRemoteChat",
 ]:
     if token not in site_js:
         fail(f"assets/js/site.js: missing functional token '{token}'")
@@ -238,6 +254,7 @@ for marker in [
     "LIFE STYLE PUBLIC PAGE",
     "ADMIN TOP NAV SHORTCUT",
     "COMPACT SUBPAGE HERO / PANEL LOCK",
+    "SECURE USERNAME CHAT",
 ]:
     if marker not in css:
         fail(f"assets/css/styles.css: missing marker '{marker}'")
