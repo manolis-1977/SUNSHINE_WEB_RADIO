@@ -4046,3 +4046,15 @@ main,
     margin-top: 8px !important;
   }
 }
+
+
+/* ===== LIVE CHAT RIGHT BREATHING ROOM ===== */
+@media (min-width: 761px) {
+  .page-live .live-chat-panel .chat-heading {
+    padding-right: 12px;
+  }
+
+  .page-live .live-chat-panel .chat-user-bar {
+    margin-right: 12px;
+  }
+}
