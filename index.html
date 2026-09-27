@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=transparent-logo1">
+  <link rel="stylesheet" href="assets/css/styles.css?v=playmode1">
 </head>
 <body class="sunshine-page page-home">
   <div class="page-shell">
@@ -92,6 +92,15 @@
               <span>LIVE</span>
               <div class="progress-track"><div class="progress-fill"></div></div>
               <span>24/7</span>
+            </div>
+
+            <div class="playback-mode-control" aria-label="Playback mode">
+              <span class="playback-mode-label">PLAY MODE</span>
+              <div class="playback-mode-buttons">
+                <button type="button" data-playback-mode="auto" aria-pressed="false">AUTO</button>
+                <button type="button" data-playback-mode="manual" aria-pressed="false">MANUAL</button>
+              </div>
+              <small data-playback-status>MANUAL: press PLAY in the stream player.</small>
             </div>
 
             <div class="caster-widget-shell" id="casterLivePlayer" aria-label="SunShine live stream player">
@@ -235,6 +244,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.cloud.caster.fm/widgets/embed.js"></script>
-  <script src="assets/js/site.js?v=control1"></script>
+  <script src="assets/js/site.js?v=playmode1"></script>
 </body>
 </html>
