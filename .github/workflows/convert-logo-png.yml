@@ -43,7 +43,7 @@ jobs:
           excluded = {Path(".github/workflows/convert-logo-png.yml")}
 
           for path in Path(".").rglob("*"):
-              if not path.is_file() or path in excluded or ".git" in path.parts:
+              if not path.is_file() or path in excluded or ".git" in path.parts or ".github" in path.parts:
                   continue
               if path.suffix.lower() not in text_extensions:
                   continue
