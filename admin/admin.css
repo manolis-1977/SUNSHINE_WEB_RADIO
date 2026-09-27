@@ -38,3 +38,22 @@ width:100%;border:1px solid rgba(255,207,74,.32);border-radius:12px;background:#
 .change-password{display:grid;grid-template-columns:1fr 1fr auto;gap:10px}.change-password input{min-width:0}
 .admin-actions{display:flex;gap:10px;align-items:center}
 @media(max-width:850px){.admin-grid{grid-template-columns:1fr}.admin-card.wide{grid-column:auto}.change-password{grid-template-columns:1fr}.admin-topbar{padding:0 16px}.admin-main{width:min(100% - 22px,1180px)}}
+.cms-panel{scroll-margin-top:92px}
+.cms-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
+.cms-head h2{margin:0}.cms-head p{margin:5px 0 0}
+.cms-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cms-form-grid.one{grid-template-columns:1fr}
+.cms-form-grid label,.list-row label{display:grid;gap:6px;color:#dfe8f3;font-size:.82rem;font-weight:700}
+.cms-form-grid input,.cms-form-grid textarea,.list-row input,.list-row textarea,.list-row select{
+width:100%;border:1px solid rgba(255,207,74,.27);border-radius:10px;background:#06101d;color:#fff;padding:10px 11px;outline:none}
+.cms-form-grid textarea,.list-row textarea{resize:vertical}
+.toggle-line{display:flex!important;grid-column:1/-1;align-items:center;gap:9px}.toggle-line input{width:auto}
+.list-editor{display:grid;gap:10px}
+.list-row{display:grid;grid-template-columns:80px 80px 1.2fr 1fr 90px auto;gap:9px;align-items:end;padding:12px;border:1px solid rgba(255,196,38,.20);border-radius:14px;background:rgba(4,12,22,.45)}
+.list-row.shows{grid-template-columns:120px 1fr 2fr 90px auto}
+.list-row.djs{grid-template-columns:1fr 1fr 130px 1fr 90px auto}
+.row-remove{border:1px solid rgba(255,72,101,.38);background:rgba(255,72,101,.09);color:#ff9bac;border-radius:9px;padding:10px 11px;cursor:pointer}
+.toggle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.feature-toggle{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid rgba(255,196,38,.18);border-radius:11px;background:rgba(4,12,22,.4)}
+.feature-toggle input{width:18px;height:18px}
+@media(max-width:850px){.cms-form-grid,.toggle-grid{grid-template-columns:1fr}.cms-head{flex-direction:column}.list-row,.list-row.shows,.list-row.djs{grid-template-columns:1fr}.admin-actions{flex-wrap:wrap}}
