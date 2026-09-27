@@ -20,8 +20,10 @@ const SUNSHINE_INITIAL_MESSAGES = []
 const CHAT_STORAGE_KEY = "sunshine_chat_preview_v1";
 const CONTACT_STORAGE_KEY = "sunshine_contact_draft_v1";
 const SUNSHINE_CMS_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-admin-auth";
+const SUNSHINE_LIFESTYLE_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-lifestyle-api";
 const SUNSHINE_PLAYBACK_MODE_KEY = "sunshine_playback_mode_v1";
 let SUNSHINE_SHOWS = [];
+let SUNSHINE_LIFESTYLE_ARTICLES = [];
 let SUNSHINE_PUBLIC_CONTENT = {};
 const SUNSHINE_RADIO_CONFIG = window.SUNSHINE_RADIO_CONFIG || { streamUrl: "", metadataUrl: "" };
 
@@ -236,6 +238,7 @@ function applyPublicContent() {
     "shows.html": "showsPage",
     "schedule.html": "schedulePage",
     "djs.html": "djsPage",
+    "lifestyle.html": "lifestylePage",
     "chat.html": "chatPage",
     "contact.html": "contactPage"
   };
