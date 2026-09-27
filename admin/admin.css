@@ -57,3 +57,12 @@ width:100%;border:1px solid rgba(255,207,74,.27);border-radius:10px;background:#
 .feature-toggle{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid rgba(255,196,38,.18);border-radius:11px;background:rgba(4,12,22,.4)}
 .feature-toggle input{width:18px;height:18px}
 @media(max-width:850px){.cms-form-grid,.toggle-grid{grid-template-columns:1fr}.cms-head{flex-direction:column}.list-row,.list-row.shows,.list-row.djs{grid-template-columns:1fr}.admin-actions{flex-wrap:wrap}}
+
+.ad-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ad-admin-card{padding:16px;border:1px solid rgba(255,196,38,.20);border-radius:16px;background:rgba(4,12,22,.42)}
+.ad-admin-card h3{margin:0 0 14px;color:var(--gold2)}
+.cms-form-grid select{
+  width:100%;border:1px solid rgba(255,207,74,.27);border-radius:10px;
+  background:#06101d;color:#fff;padding:10px 11px;outline:none
+}
+@media(max-width:850px){.ad-admin-grid{grid-template-columns:1fr}}
