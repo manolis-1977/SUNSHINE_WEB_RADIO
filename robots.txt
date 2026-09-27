@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://manolis-1977.github.io/SUNSHINE_WEB_RADIO/sitemap.xml
