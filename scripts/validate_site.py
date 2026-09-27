@@ -107,20 +107,18 @@ for page_name in PAGES:
     if "assets/css/styles.css?v=phase3a" not in text:
         fail(f"{page_name}: phase3a stylesheet cache key missing")
 
+    if "assets/js/site.js?v=cms1" not in text:
+        fail(f"{page_name}: CMS-enabled site.js cache key missing")
+
     if page_name in {"index.html", "live-radio.html"}:
         if "cdn.cloud.caster.fm/widgets/embed.js" not in text:
             fail(f"{page_name}: Caster.fm widget script is not active")
-        if "assets/js/site.js?v=caster1" not in text:
-            fail(f"{page_name}: Caster-enabled site.js cache key missing")
         if "casterLivePlayer" not in parser.ids:
             fail(f"{page_name}: Caster.fm live player container is missing")
         if 'data-publicToken="1f6d73a7-7eca-482d-99a1-5d603625f5f8"' not in text:
             fail(f"{page_name}: Caster.fm public token is missing")
         if page_name == "index.html" and "assets/js/app.js" in text:
             fail("index.html: legacy app.js must not be loaded")
-    else:
-        if "assets/js/site.js?v=phase3a" not in text:
-            fail(f"{page_name}: shared site.js cache key missing")
 
     if parser.active_nav_links != 1:
         fail(f"{page_name}: expected exactly one active navigation link, got {parser.active_nav_links}")
@@ -149,6 +147,8 @@ if "sunshine-admin-auth" not in admin_js:
     fail("admin/admin.js: secure auth endpoint missing")
 if "sessionStorage" not in admin_js:
     fail("admin/admin.js: session-only auth storage missing")
+if "saveContent" not in admin_js or "scheduleEditor" not in admin_dashboard:
+    fail("admin/dashboard.html: CMS panels missing")
 if "service_role" in admin_js.lower() or "password_hash" in admin_js.lower():
     fail("admin/admin.js: server-side secret leaked to public client")
 
@@ -161,6 +161,9 @@ for token in [
     "setupContactDraft",
     "Europe/Athens",
     "casterLivePlayer",
+    "SUNSHINE_CMS_API",
+    "publicContent",
+    "renderShows",
 ]:
     if token not in site_js:
         fail(f"assets/js/site.js: missing functional token '{token}'")
