@@ -730,16 +730,18 @@ img { max-width: 100%; display: block; }
 .chat-feed {
   margin-top: 18px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px 18px;
+  grid-template-columns: 1fr;
+  gap: 10px;
   min-height: 174px;
+  align-content: start;
 }
 
 .chat-message {
+  width: 100%;
   display: grid;
-  grid-template-columns: 34px 1fr;
+  grid-template-columns: 34px minmax(0, 1fr);
   gap: 9px;
-  align-items: center;
+  align-items: start;
 }
 
 .avatar {
