@@ -39,7 +39,7 @@ jobs:
             assets/sunshine-radiance.svg \
             assets/js/app.js \
             assets/js/site.js \
-            assets/sunshine-logo.webp \
+            assets/sunshine-logo.png \
             privacy.html \
             terms.html \
             404.html \
