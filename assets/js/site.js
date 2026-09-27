@@ -964,6 +964,42 @@ function setupMenu() {
   });
 }
 
+function setupLiveChatPanelSizing() {
+  const player = document.querySelector(".page-live .player-card");
+  const panel = document.querySelector(".page-live .live-chat-panel");
+  if (!player || !panel) return;
+
+  const desktop = window.matchMedia("(min-width: 1101px)");
+
+  const sync = () => {
+    if (!desktop.matches) {
+      panel.style.removeProperty("height");
+      panel.style.removeProperty("max-height");
+      return;
+    }
+    const height = Math.ceil(player.getBoundingClientRect().height);
+    if (height > 0) {
+      panel.style.height = `${height}px`;
+      panel.style.maxHeight = `${height}px`;
+    }
+  };
+
+  sync();
+  window.addEventListener("resize", sync, { passive: true });
+  desktop.addEventListener?.("change", sync);
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(sync);
+    observer.observe(player);
+  } else {
+    window.setInterval(sync, 1500);
+  }
+
+  window.setTimeout(sync, 250);
+  window.setTimeout(sync, 1000);
+  window.setTimeout(sync, 2500);
+}
+
 function setYear() {
   document.querySelectorAll("[data-current-year], #year").forEach(element => {
     element.textContent = new Date().getFullYear();
@@ -985,6 +1021,7 @@ async function bootstrapSunShine() {
   setupChat("chatFeed", "chatForm", "chatInput");
   setupChat("chatFeedLive", "chatFormLive", "chatInputLive");
   setupChat("chatFeedPage", "chatFormPage", "chatInputPage");
+  setupLiveChatPanelSizing();
   setYear();
 }
 bootstrapSunShine();
