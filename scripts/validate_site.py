@@ -135,12 +135,8 @@ for page_name in PAGES:
     if 'class="sunshine-page' not in text:
         fail(f"{page_name}: missing shared sunshine-page class")
 
-    if page_name in {"index.html", "live-radio.html"}:
-        expected_css = "assets/css/styles.css?v=playmode1"
-        expected_js = "assets/js/site.js?v=playmode1"
-    else:
-        expected_css = "assets/css/styles.css?v=transparent-logo1"
-        expected_js = "assets/js/site.js?v=cms1"
+    expected_css = "assets/css/styles.css?v=lifestyle1"
+    expected_js = "assets/js/site.js?v=lifestyle1"
 
     if expected_css not in text:
         fail(f"{page_name}: expected stylesheet cache key missing")
