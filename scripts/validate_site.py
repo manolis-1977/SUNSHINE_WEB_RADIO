@@ -18,8 +18,8 @@ PAGES = [
 ]
 
 REQUIRED_IDS = {
-    "index.html": ["scheduleList", "djGrid", "chatFeed", "chatForm", "chatInput"],
-    "live-radio.html": ["player"],
+    "index.html": ["scheduleList", "djGrid", "homeAdLeft", "homeAdRight"],
+    "live-radio.html": ["player", "liveChat", "chatFeedLive", "chatFormLive", "chatInputLive"],
     "schedule.html": ["fullScheduleList", "scheduleLiveStatus"],
     "djs.html": ["djGridFull"],
     "chat.html": ["chatFeedPage", "chatFormPage", "chatInputPage"],
@@ -104,11 +104,13 @@ for page_name in PAGES:
     if 'class="sunshine-page' not in text:
         fail(f"{page_name}: missing shared sunshine-page class")
 
-    if "assets/css/styles.css?v=phase3a" not in text:
-        fail(f"{page_name}: phase3a stylesheet cache key missing")
+    expected_css = "assets/css/styles.css?v=control1" if page_name in {"index.html", "live-radio.html"} else "assets/css/styles.css?v=phase3a"
+    if expected_css not in text:
+        fail(f"{page_name}: expected stylesheet cache key missing")
 
-    if "assets/js/site.js?v=cms1" not in text:
-        fail(f"{page_name}: CMS-enabled site.js cache key missing")
+    expected_js = "assets/js/site.js?v=control1" if page_name in {"index.html", "live-radio.html"} else "assets/js/site.js?v=cms1"
+    if expected_js not in text:
+        fail(f"{page_name}: expected site.js cache key missing")
 
     if page_name in {"index.html", "live-radio.html"}:
         if "cdn.cloud.caster.fm/widgets/embed.js" not in text:
@@ -149,6 +151,9 @@ if "sessionStorage" not in admin_js:
     fail("admin/admin.js: session-only auth storage missing")
 if "saveContent" not in admin_js or "scheduleEditor" not in admin_dashboard:
     fail("admin/dashboard.html: CMS panels missing")
+for token in ["Home Advertisements", "data-save=\"ads\"", "data-save=\"live\"", "data-save=\"chat\""]:
+    if token not in admin_dashboard:
+        fail(f"admin/dashboard.html: missing control token '{token}'")
 if "service_role" in admin_js.lower() or "password_hash" in admin_js.lower():
     fail("admin/admin.js: server-side secret leaked to public client")
 
@@ -164,6 +169,9 @@ for token in [
     "SUNSHINE_CMS_API",
     "publicContent",
     "renderShows",
+    "renderAdSlot",
+    "applyLiveAndChatContent",
+    "chatFeedLive",
 ]:
     if token not in site_js:
         fail(f"assets/js/site.js: missing functional token '{token}'")
@@ -175,6 +183,7 @@ for marker in [
     "PHASE 3A: MULTI-PAGE FUNCTIONAL POLISH",
     "PHASE 3B: CASTER.FM LIVE STREAM PLAYER",
     "PRE-LAUNCH COMPLETION PASS",
+    "PHASE 4: ADMIN-CONTROLLED ADS + LIVE CHAT RELOCATION",
 ]:
     if marker not in css:
         fail(f"assets/css/styles.css: missing marker '{marker}'")
