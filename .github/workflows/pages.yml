@@ -46,6 +46,11 @@ jobs:
             robots.txt \
             sitemap.xml \
             site.webmanifest \
+            admin/index.html \
+            admin/setup.html \
+            admin/dashboard.html \
+            admin/admin.css \
+            admin/admin.js \
             scripts/validate_site.py
           do
             if [[ ! -f "$file" ]]; then
