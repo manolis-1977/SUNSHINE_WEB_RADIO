@@ -133,12 +133,11 @@ for page_name in PAGES:
     if 'class="sunshine-page' not in text:
         fail(f"{page_name}: missing shared sunshine-page class")
 
-    expected_css = "assets/css/styles.css?v=transparent-logo1"
-    if page_name == "index.html":
-        expected_js = "assets/js/site.js?v=control1"
-    elif page_name == "live-radio.html":
-        expected_js = "assets/js/site.js?v=control2"
+    if page_name in {"index.html", "live-radio.html"}:
+        expected_css = "assets/css/styles.css?v=playmode1"
+        expected_js = "assets/js/site.js?v=playmode1"
     else:
+        expected_css = "assets/css/styles.css?v=transparent-logo1"
         expected_js = "assets/js/site.js?v=cms1"
 
     if expected_css not in text:
@@ -147,6 +146,9 @@ for page_name in PAGES:
         fail(f"{page_name}: expected site.js cache key missing")
 
     if page_name in {"index.html", "live-radio.html"}:
+        for token in ['data-playback-mode="auto"', 'data-playback-mode="manual"', "data-playback-status"]:
+            if token not in text:
+                fail(f"{page_name}: missing playback mode control '{token}'")
         if "cdn.cloud.caster.fm/widgets/embed.js" not in text:
             fail(f"{page_name}: Caster.fm widget script is not active")
         if "casterLivePlayer" not in parser.ids:
@@ -185,7 +187,7 @@ if "sessionStorage" not in admin_js:
     fail("admin/admin.js: session-only auth storage missing")
 if "saveContent" not in admin_js or "scheduleEditor" not in admin_dashboard:
     fail("admin/dashboard.html: CMS panels missing")
-for token in ["Home Advertisements", "data-save=\"ads\"", "data-save=\"live\"", "data-save=\"chat\""]:
+for token in ["Home Advertisements", "data-save=\"ads\"", "data-save=\"live\"", "data-save=\"chat\"", "live_defaultPlaybackMode"]:
     if token not in admin_dashboard:
         fail(f"admin/dashboard.html: missing control token '{token}'")
 if "service_role" in admin_js.lower() or "password_hash" in admin_js.lower():
@@ -206,6 +208,9 @@ for token in [
     "renderAdSlot",
     "applyLiveAndChatContent",
     "chatFeedLive",
+    "SUNSHINE_PLAYBACK_MODE_KEY",
+    "setupPlaybackMode",
+    "tryStartCasterPlayback",
 ]:
     if token not in site_js:
         fail(f"assets/js/site.js: missing functional token '{token}'")
@@ -219,6 +224,7 @@ for marker in [
     "PRE-LAUNCH COMPLETION PASS",
     "PHASE 4: ADMIN-CONTROLLED ADS + LIVE CHAT RELOCATION",
     "TRANSPARENT PNG LOGO LOCK",
+    "PLAYER AUTO / MANUAL MODE",
 ]:
     if marker not in css:
         fail(f"assets/css/styles.css: missing marker '{marker}'")
