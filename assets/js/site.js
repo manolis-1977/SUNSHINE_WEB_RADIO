@@ -18,9 +18,12 @@ let SUNSHINE_DJS = [
 const SUNSHINE_INITIAL_MESSAGES = []
 
 const CHAT_STORAGE_KEY = "sunshine_chat_preview_v1";
+const CHAT_USERNAME_KEY = "sunshine_chat_username_v1";
+const CHAT_OWNER_TOKEN_KEY = "sunshine_chat_owner_token_v1";
 const CONTACT_STORAGE_KEY = "sunshine_contact_draft_v1";
 const SUNSHINE_CMS_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-admin-auth";
 const SUNSHINE_LIFESTYLE_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-lifestyle-api";
+const SUNSHINE_CHAT_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-chat-api";
 const SUNSHINE_PLAYBACK_MODE_KEY = "sunshine_playback_mode_v1";
 let SUNSHINE_SHOWS = [];
 let SUNSHINE_LIFESTYLE_ARTICLES = [];
@@ -542,79 +545,191 @@ function renderDjs() {
   }
 }
 
-function loadChatMessages() {
+function chatOwnerToken() {
   try {
-    const stored = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "null");
-    if (Array.isArray(stored) && stored.length) return stored.slice(-30);
-  } catch {}
-  return [...SUNSHINE_INITIAL_MESSAGES];
+    let token = localStorage.getItem(CHAT_OWNER_TOKEN_KEY) || "";
+    if (token.length >= 32) return token;
+    token = (crypto.randomUUID?.() || Math.random().toString(36).slice(2)) +
+      (crypto.randomUUID?.() || Math.random().toString(36).slice(2));
+    localStorage.setItem(CHAT_OWNER_TOKEN_KEY, token);
+    return token;
+  } catch {
+    return (crypto.randomUUID?.() || Math.random().toString(36).slice(2)) +
+      (crypto.randomUUID?.() || Math.random().toString(36).slice(2));
+  }
 }
 
-function saveChatMessages(messages) {
+function storedChatUsername() {
+  try { return (localStorage.getItem(CHAT_USERNAME_KEY) || "").trim(); }
+  catch { return ""; }
+}
+
+function saveChatUsername(username) {
+  try { localStorage.setItem(CHAT_USERNAME_KEY, username); } catch {}
+}
+
+function clearChatIdentity() {
   try {
-    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages.slice(-30)));
+    localStorage.removeItem(CHAT_USERNAME_KEY);
+    localStorage.removeItem(CHAT_OWNER_TOKEN_KEY);
   } catch {}
+}
+
+async function chatApi(action, payload = {}) {
+  const response = await fetch(SUNSHINE_CHAT_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, ...payload }),
+    cache: "no-store"
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error || "CHAT_REQUEST_FAILED");
+    error.payload = data;
+    throw error;
+  }
+  return data;
+}
+
+function chatErrorMessage(error) {
+  const code = String(error?.message || "");
+  if (code === "USERNAME_TAKEN") return "This username is already reserved by another device. Choose another username.";
+  if (code === "INVALID_USERNAME") return "Use 3–24 letters, numbers, spaces, dot, dash or underscore.";
+  if (code === "BANNED") return "This username has been banned from SunShine Chat.";
+  if (code === "BLOCKED") return "This username is currently blocked from SunShine Chat.";
+  if (code === "USERNAME_OWNED_BY_ANOTHER_DEVICE") return "This username belongs to another saved device.";
+  return "Chat is temporarily unavailable. Please try again.";
 }
 
 function messageMarkup(message) {
-  const initials = String(message.user)
-    .split(/\s+/)
-    .map(part => part[0] || "")
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
+  const user = String(message.username_snapshot || message.user || "");
+  const initials = user.split(/\s+/).map(part => part[0] || "").join("").slice(0, 2).toUpperCase();
+  const time = message.created_at
+    ? new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : String(message.time || "");
   return `
-    <article class="chat-message">
+    <article class="chat-message" data-chat-message-id="${escapeHtml(message.id || "")}">
       <div class="avatar">${escapeHtml(initials)}</div>
       <div class="message-copy">
         <div class="message-meta">
-          <strong>${escapeHtml(message.user)}</strong>
-          <span>${escapeHtml(message.time)}</span>
+          <strong>${escapeHtml(user)}</strong>
+          <span>${escapeHtml(time)}</span>
         </div>
-        <p class="message-bubble">${escapeHtml(message.text)}</p>
+        <p class="message-bubble">${escapeHtml(message.body || message.text || "")}</p>
       </div>
     </article>
   `;
 }
 
-function renderChatInto(feed) {
+async function renderRemoteChat(feed) {
   if (!feed) return;
-  const messages = loadChatMessages();
-  if (!messages.length) {
-    feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>No public messages yet. The full multi-user chat will be activated before community launch.</p></div>';
-    return;
+  try {
+    const data = await chatApi("messages", { limit: 60 });
+    const messages = Array.isArray(data.messages) ? data.messages : [];
+    if (!messages.length) {
+      feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>No public messages yet. Be the first to say hello.</p></div>';
+      return;
+    }
+    feed.innerHTML = messages.map(messageMarkup).join("");
+    feed.scrollTop = feed.scrollHeight;
+  } catch {
+    feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>Chat messages are temporarily unavailable.</p></div>';
   }
-  feed.innerHTML = messages.map(messageMarkup).join("");
+}
+
+function updateChatLoginUi(panel, username = "") {
+  if (!panel) return;
+  const login = panel.querySelector("[data-chat-login]");
+  const userBar = panel.querySelector("[data-chat-user-bar]");
+  const userName = panel.querySelector("[data-chat-user-name]");
+  const compose = panel.querySelector(".chat-compose");
+  const signedIn = Boolean(username);
+  if (login) login.hidden = signedIn;
+  if (userBar) userBar.hidden = !signedIn;
+  if (userName) userName.textContent = username;
+  if (compose) compose.hidden = !signedIn;
+}
+
+async function claimChatUsername(panel, username) {
+  const status = panel?.querySelector("[data-chat-login-status]");
+  if (status) status.textContent = "Checking username…";
+  try {
+    const data = await chatApi("claim", {
+      username,
+      ownerToken: chatOwnerToken()
+    });
+    const claimed = data.user?.username || username;
+    saveChatUsername(claimed);
+    updateChatLoginUi(panel, claimed);
+    if (status) status.textContent = "";
+    return claimed;
+  } catch (error) {
+    if (status) status.textContent = chatErrorMessage(error);
+    updateChatLoginUi(panel, "");
+    throw error;
+  }
 }
 
 function setupChat(feedId, formId, inputId) {
   const feed = document.getElementById(feedId);
   const form = document.getElementById(formId);
   const input = document.getElementById(inputId);
-
-  renderChatInto(feed);
   if (!feed || !form || !input) return;
 
-  form.addEventListener("submit", event => {
-    event.preventDefault();
-    const text = input.value.trim();
-    if (!text) return;
+  const panel = feed.closest(".chat-panel") || feed.parentElement;
+  const loginForm = panel?.querySelector("[data-chat-login-form]");
+  const usernameInput = panel?.querySelector("[data-chat-username]");
+  const logout = panel?.querySelector("[data-chat-logout]");
 
-    const messages = loadChatMessages();
-    const now = new Date();
-    messages.push({
-      user: "You",
-      time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      text
-    });
-    saveChatMessages(messages);
-    renderChatInto(feed);
-    input.value = "";
-    input.focus();
-    feed.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    showToast("Message added to your local SunShine chat preview. Multi-user chat backend comes next.");
+  renderRemoteChat(feed);
+
+  const savedUsername = storedChatUsername();
+  if (savedUsername) {
+    claimChatUsername(panel, savedUsername).catch(() => {});
+  } else {
+    updateChatLoginUi(panel, "");
+  }
+
+  loginForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const username = String(usernameInput?.value || "").trim();
+    if (!username) return;
+    try {
+      await claimChatUsername(panel, username);
+      if (usernameInput) usernameInput.value = "";
+      showToast("Welcome to SunShine Chat.");
+    } catch {}
   });
+
+  logout?.addEventListener("click", () => {
+    clearChatIdentity();
+    updateChatLoginUi(panel, "");
+    showToast("Saved chat identity removed from this device.");
+  });
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    const username = storedChatUsername();
+    const text = input.value.trim();
+    if (!username) {
+      showToast("Choose your username before sending messages.");
+      return;
+    }
+    if (!text) return;
+    try {
+      await chatApi("post", { username, ownerToken: chatOwnerToken(), text });
+      input.value = "";
+      await renderRemoteChat(feed);
+      input.focus();
+    } catch (error) {
+      showToast(chatErrorMessage(error));
+      if (String(error?.message || "") === "BANNED" || String(error?.message || "") === "BLOCKED") {
+        updateChatLoginUi(panel, "");
+      }
+    }
+  });
+
+  window.setInterval(() => renderRemoteChat(feed), 5000);
 }
 
 function setupEmojiButtons() {
