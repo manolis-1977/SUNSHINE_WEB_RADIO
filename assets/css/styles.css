@@ -4121,3 +4121,17 @@ main,
     line-height: 1.30 !important;
   }
 }
+
+
+/* ===== LIVE CHAT FINAL READABILITY BUMP ===== */
+@media (min-width: 761px) {
+  .page-live .live-chat-panel .message-meta {
+    font-size: .78rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .page-live .live-chat-panel .message-bubble {
+    font-size: .90rem !important;
+    line-height: 1.34 !important;
+  }
+}
