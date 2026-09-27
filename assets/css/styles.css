@@ -3735,3 +3735,60 @@ main,
     text-align:center;
   }
 }
+
+
+/* ===== COMPACT SUBPAGE HERO / PANEL LOCK ===== */
+/* One logo only: the header brand. Internal page hero logos are permanently suppressed. */
+.sunshine-page:not(.page-home) .subpage-hero .hero-logo-small{
+  display:none!important;
+}
+
+/* Pull every internal page up under the header so title + main panel are visible sooner. */
+.sunshine-page:not(.page-home) .subpage-main{
+  padding-top:10px!important;
+  padding-bottom:54px;
+}
+.sunshine-page:not(.page-home) .subpage-hero{
+  padding-top:14px!important;
+  padding-bottom:8px!important;
+}
+.sunshine-page:not(.page-home) .subpage-hero .container{
+  display:grid;
+  justify-items:center;
+  gap:3px;
+}
+.sunshine-page:not(.page-home) .subpage-hero h1{
+  margin:0!important;
+  font-size:clamp(2.15rem,4.15vw,4rem);
+  line-height:1.02;
+}
+.sunshine-page:not(.page-home) .subpage-hero p{
+  margin:6px auto 0!important;
+  line-height:1.45;
+}
+.sunshine-page:not(.page-home) .subpage-section{
+  padding-top:7px!important;
+}
+
+/* Live Radio gets the tightest above-the-fold layout. */
+.page-live .subpage-main{padding-top:6px!important}
+.page-live .subpage-hero{padding-top:9px!important;padding-bottom:5px!important}
+.page-live .subpage-section{padding-top:4px!important}
+.page-live .live-radio-layout{margin-top:0!important}
+.page-live .player-card,
+.page-live .live-chat-panel{margin-top:0!important}
+
+/* Keep the first content panel close to the heading on the remaining internal pages. */
+.page-shows .subpage-panel,
+.page-schedule .subpage-panel,
+.page-djs .subpage-panel,
+.page-lifestyle .subpage-panel,
+.page-chat .chat-panel,
+.page-contact .subpage-panel{
+  margin-top:0!important;
+}
+
+@media(max-width:700px){
+  .sunshine-page:not(.page-home) .subpage-main{padding-top:6px!important}
+  .sunshine-page:not(.page-home) .subpage-hero{padding-top:10px!important}
+}
