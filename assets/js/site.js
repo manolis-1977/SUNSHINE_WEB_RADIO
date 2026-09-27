@@ -852,6 +852,37 @@ function findPlayableControl(root) {
   return button ? { type: "button", node: button } : null;
 }
 
+function prepareCasterAutoplayFrames() {
+  const widget = document.getElementById("casterLivePlayer");
+  if (!widget) return;
+
+  const enableAutoplay = frame => {
+    if (!(frame instanceof HTMLIFrameElement)) return;
+    const permissions = String(frame.getAttribute("allow") || "")
+      .split(";")
+      .map(value => value.trim())
+      .filter(Boolean);
+    if (!permissions.some(value => value === "autoplay" || value.startsWith("autoplay "))) {
+      permissions.push("autoplay");
+      frame.setAttribute("allow", permissions.join("; "));
+    }
+  };
+
+  widget.querySelectorAll("iframe").forEach(enableAutoplay);
+
+  if ("MutationObserver" in window) {
+    const observer = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        mutation.addedNodes.forEach(node => {
+          if (node instanceof HTMLIFrameElement) enableAutoplay(node);
+          node.querySelectorAll?.("iframe").forEach(enableAutoplay);
+        });
+      }
+    });
+    observer.observe(widget, { childList: true, subtree: true });
+  }
+}
+
 async function tryStartCasterPlayback({ userInitiated = false } = {}) {
   const widget = document.getElementById("casterLivePlayer");
   if (!widget) return false;
@@ -911,6 +942,7 @@ async function applyPlaybackMode(mode, { persist = false, userInitiated = false 
 function setupPlaybackMode() {
   const initialMode = getPlaybackMode();
   updatePlaybackModeUi(initialMode);
+  prepareCasterAutoplayFrames();
 
   document.querySelectorAll("[data-playback-mode]").forEach(button => {
     button.addEventListener("click", () => {
@@ -918,18 +950,34 @@ function setupPlaybackMode() {
     });
   });
 
-  if (initialMode === "auto") {
+  const retryAutoPlayback = () => {
+    if (getPlaybackMode() !== "auto") return;
     let tries = 0;
     const timer = window.setInterval(async () => {
       tries += 1;
+      prepareCasterAutoplayFrames();
       const started = await tryStartCasterPlayback();
-      if (started || tries >= 8) {
+      if (started || tries >= 24) {
         window.clearInterval(timer);
         updatePlaybackModeUi("auto", started
           ? "AUTO: live stream start requested."
-          : "AUTO is enabled. If your browser blocks sound autoplay, press PLAY once.");
+          : "AUTO is enabled. Your browser may require one interaction before sound can start.");
       }
     }, 750);
+  };
+
+  if (initialMode === "auto") {
+    retryAutoPlayback();
+
+    const resumeOnFirstGesture = () => {
+      if (getPlaybackMode() === "auto") {
+        applyPlaybackMode("auto", { userInitiated: true });
+      }
+    };
+
+    window.addEventListener("pointerdown", resumeOnFirstGesture, { once: true, capture: true });
+    window.addEventListener("keydown", resumeOnFirstGesture, { once: true, capture: true });
+    window.addEventListener("touchstart", resumeOnFirstGesture, { once: true, capture: true, passive: true });
   }
 }
 
