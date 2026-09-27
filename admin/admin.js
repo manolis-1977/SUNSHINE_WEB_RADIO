@@ -214,7 +214,7 @@ function populateCms() {
   });
 
   const live=CMS.live||{};
-  ["heroTitle","heroSubtitle","stationLabel","streamLabel","fallbackTrackTitle","fallbackTrackArtist","playerEnabled"].forEach(k=>setInput("live_"+k,live[k]));
+  ["heroTitle","heroSubtitle","stationLabel","streamLabel","fallbackTrackTitle","fallbackTrackArtist","playerEnabled","defaultPlaybackMode"].forEach(k=>setInput("live_"+k,live[k]));
 
   const chat=CMS.chat||{};
   ["enabled","title","subtitle","statusLabel","placeholder"].forEach(k=>setInput("chat_"+k,chat[k]));
@@ -262,6 +262,7 @@ function collectNamespace(ns) {
     stationLabel:readText("live_stationLabel"),streamLabel:readText("live_streamLabel"),
     fallbackTrackTitle:readText("live_fallbackTrackTitle"),fallbackTrackArtist:readText("live_fallbackTrackArtist"),
     playerEnabled:document.getElementById("live_playerEnabled").checked,
+    defaultPlaybackMode:readText("live_defaultPlaybackMode")==="auto"?"auto":"manual",
     casterPublicToken:CMS.live?.casterPublicToken||"",
     casterTheme:CMS.live?.casterTheme||"dark",
     casterColor:CMS.live?.casterColor||"ffba00"
