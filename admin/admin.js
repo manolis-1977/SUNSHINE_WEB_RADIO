@@ -1,5 +1,31 @@
 const ADMIN_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-admin-auth";
+const LIFESTYLE_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-lifestyle-api";
+const LIFESTYLE_REFRESH_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-lifestyle-refresh";
 const SESSION_KEY = "sunshine_admin_session_v1";
+
+async function lifestyleApi(action, payload = {}, token = "") {
+  const response = await fetch(LIFESTYLE_API, {
+    method: "POST",
+    headers: {"Content-Type":"application/json", ...(token ? {Authorization:`Bearer ${token}`} : {})},
+    body: JSON.stringify({action, ...payload}),
+    cache: "no-store"
+  });
+  const data = await response.json().catch(()=>({}));
+  if (!response.ok) throw new Error(data.error || "LIFESTYLE_REQUEST_FAILED");
+  return data;
+}
+
+async function refreshLifestyle(payload = {}) {
+  const response = await fetch(LIFESTYLE_REFRESH_API, {
+    method:"POST",
+    headers:{"Content-Type":"application/json",Authorization:`Bearer ${getSessionToken()}`},
+    body:JSON.stringify(payload),
+    cache:"no-store"
+  });
+  const data = await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(data.error || "LIFESTYLE_REFRESH_FAILED");
+  return data;
+}
 
 async function api(action, payload = {}, token = "") {
   const response = await fetch(ADMIN_API, {
@@ -219,6 +245,9 @@ function populateCms() {
   const chat=CMS.chat||{};
   ["enabled","title","subtitle","statusLabel","placeholder"].forEach(k=>setInput("chat_"+k,chat[k]));
 
+  const lifestyle=CMS.lifestyle||{};
+  ["enabled","title","subtitle","maxArticles","showImages","showSource","showDate","openLinksNewTab","emptyMessage"].forEach(k=>setInput("lifestyle_"+k,lifestyle[k]));
+
   renderScheduleEditor(); renderShowsEditor(); renderDjsEditor(); renderFeatures();
 }
 function collectNamespace(ns) {
@@ -273,6 +302,17 @@ function collectNamespace(ns) {
     statusLabel:readText("chat_statusLabel"),placeholder:readText("chat_placeholder"),
     placement:"live-right"
   };
+  if(ns==="lifestyle") return {
+    enabled:document.getElementById("lifestyle_enabled").checked,
+    title:readText("lifestyle_title")||"Life Style",
+    subtitle:readText("lifestyle_subtitle"),
+    maxArticles:Math.max(1,Math.min(200,Number(readText("lifestyle_maxArticles")||48))),
+    showImages:document.getElementById("lifestyle_showImages").checked,
+    showSource:document.getElementById("lifestyle_showSource").checked,
+    showDate:document.getElementById("lifestyle_showDate").checked,
+    openLinksNewTab:document.getElementById("lifestyle_openLinksNewTab").checked,
+    emptyMessage:readText("lifestyle_emptyMessage")
+  };
   if(ns==="features"){
     const next={...(CMS.features||{})};
     document.querySelectorAll("[data-feature]").forEach(el=>next[el.dataset.feature]=el.checked);
@@ -304,6 +344,144 @@ function initCmsControls() {
   document.getElementById("addDj")?.addEventListener("click",()=>{CMS.djs=CMS.djs||[];CMS.djs.push({id:uid("dj"),name:"New DJ",show:"",time:"",image:"",bio:"",active:true,order:CMS.djs.length+1});renderDjsEditor()});
 }
 
+
+let LIFESTYLE_ADMIN={sources:[],articles:[]};
+
+function lifestyleDate(value){
+  if(!value) return "Never";
+  try{return new Date(value).toLocaleString()}catch{return String(value)}
+}
+
+function renderLifestyleSources(){
+  const root=document.getElementById("lifestyleSourcesEditor");
+  if(!root) return;
+  if(!LIFESTYLE_ADMIN.sources.length){
+    root.innerHTML='<div class="lock-note">No sources yet. Add your first RSS/Atom source.</div>';
+    return;
+  }
+  root.innerHTML=LIFESTYLE_ADMIN.sources.map((x,i)=>`
+    <div class="lifestyle-source-row" data-lifestyle-source="${i}">
+      <label>Name<input data-k="name" value="${esc(x.name||"")}"></label>
+      <label>Website<input data-k="site_url" type="url" value="${esc(x.site_url||"")}"></label>
+      <label>RSS / Atom URL<input data-k="feed_url" type="url" value="${esc(x.feed_url||"")}"></label>
+      <label>Category<input data-k="category" value="${esc(x.category||"Lifestyle")}"></label>
+      <label>Minutes<input data-k="refresh_minutes" type="number" min="10" max="1440" value="${Number(x.refresh_minutes||30)}"></label>
+      <label>Items<input data-k="max_items" type="number" min="1" max="50" value="${Number(x.max_items||12)}"></label>
+      <label>Enabled<select data-k="enabled"><option value="true" ${x.enabled!==false?"selected":""}>Yes</option><option value="false" ${x.enabled===false?"selected":""}>No</option></select></label>
+      <div class="lifestyle-row-actions"><button class="primary-btn" type="button" data-life-save>Save</button><button class="row-remove" type="button" data-life-remove>Remove</button></div>
+      <div class="lifestyle-source-meta">
+        <span>Last success: ${esc(lifestyleDate(x.last_success_at))}</span>
+        <span>Items: ${Number(x.last_item_count||0)}</span>
+        ${x.last_error?`<span class="error">Error: ${esc(x.last_error)}</span>`:""}
+      </div>
+    </div>`).join("");
+}
+
+function renderLifestyleArticlesAdmin(){
+  const root=document.getElementById("lifestyleArticlesEditor");
+  if(!root) return;
+  if(!LIFESTYLE_ADMIN.articles.length){
+    root.innerHTML='<div class="lock-note">No collected articles yet.</div>';
+    return;
+  }
+  root.innerHTML=LIFESTYLE_ADMIN.articles.slice(0,100).map(a=>`
+    <div class="lifestyle-article-admin-row" data-article-id="${a.id}">
+      <div><strong>${esc(a.title||"")}</strong><small>${esc(a.source_name||"")} · ${esc(a.category||"")} · ${esc(lifestyleDate(a.published_at||a.fetched_at))}</small></div>
+      <label><input type="checkbox" data-article-pin ${a.pinned?"checked":""}> Pin</label>
+      <label><input type="checkbox" data-article-hide ${a.hidden?"checked":""}> Hide</label>
+    </div>`).join("");
+}
+
+async function loadLifestyleAdmin(){
+  const data=await lifestyleApi("admin",{limit:100},getSessionToken());
+  LIFESTYLE_ADMIN.sources=data.sources||[];
+  LIFESTYLE_ADMIN.articles=data.articles||[];
+  renderLifestyleSources();
+  renderLifestyleArticlesAdmin();
+}
+
+function sourceFromRow(row,index){
+  const base=LIFESTYLE_ADMIN.sources[index]||{};
+  const get=k=>row.querySelector(`[data-k="${k}"]`)?.value ?? "";
+  return {
+    ...base,
+    name:get("name").trim(),
+    site_url:get("site_url").trim(),
+    feed_url:get("feed_url").trim(),
+    category:get("category").trim()||"Lifestyle",
+    refresh_minutes:Number(get("refresh_minutes")||30),
+    max_items:Number(get("max_items")||12),
+    enabled:get("enabled")!=="false",
+    order_index:index
+  };
+}
+
+function initLifestyleAdmin(){
+  const root=document.getElementById("lifestyleAdminPanel");
+  if(!root) return;
+
+  document.getElementById("addLifestyleSource")?.addEventListener("click",()=>{
+    LIFESTYLE_ADMIN.sources.push({id:null,name:"",site_url:"",feed_url:"",category:"Lifestyle",enabled:true,refresh_minutes:30,max_items:12,order_index:LIFESTYLE_ADMIN.sources.length});
+    renderLifestyleSources();
+  });
+
+  document.getElementById("reloadLifestyleAdmin")?.addEventListener("click",()=>loadLifestyleAdmin().catch(console.error));
+
+  document.getElementById("refreshLifestyleAll")?.addEventListener("click",async()=>{
+    const status=document.getElementById("lifestyleSourceStatus");
+    setStatus(status,"Refreshing sources…");
+    try{
+      const result=await refreshLifestyle({force:true});
+      setStatus(status,`Refresh complete: ${result.refreshed||0} source(s), ${result.failed||0} failed.`,result.failed?"error":"ok");
+      await loadLifestyleAdmin();
+    }catch(error){setStatus(status,friendlyError(error),"error")}
+  });
+
+  root.addEventListener("click",async event=>{
+    const row=event.target.closest("[data-lifestyle-source]");
+    if(!row) return;
+    const index=Number(row.dataset.lifestyleSource);
+    const status=document.getElementById("lifestyleSourceStatus");
+
+    if(event.target.closest("[data-life-save]")){
+      const source=sourceFromRow(row,index);
+      setStatus(status,"Saving source…");
+      try{
+        await lifestyleApi("saveSource",{source},getSessionToken());
+        setStatus(status,"Source saved.","ok");
+        await loadLifestyleAdmin();
+      }catch(error){setStatus(status,friendlyError(error),"error")}
+    }
+
+    if(event.target.closest("[data-life-remove]")){
+      const source=LIFESTYLE_ADMIN.sources[index];
+      if(!source?.id){
+        LIFESTYLE_ADMIN.sources.splice(index,1);
+        renderLifestyleSources();
+        return;
+      }
+      setStatus(status,"Removing source…");
+      try{
+        await lifestyleApi("removeSource",{id:source.id},getSessionToken());
+        setStatus(status,"Source removed.","ok");
+        await loadLifestyleAdmin();
+      }catch(error){setStatus(status,friendlyError(error),"error")}
+    }
+  });
+
+  document.getElementById("lifestyleArticlesEditor")?.addEventListener("change",async event=>{
+    const row=event.target.closest("[data-article-id]");
+    if(!row) return;
+    try{
+      await lifestyleApi("articleFlags",{
+        id:row.dataset.articleId,
+        pinned:Boolean(row.querySelector("[data-article-pin]")?.checked),
+        hidden:Boolean(row.querySelector("[data-article-hide]")?.checked)
+      },getSessionToken());
+    }catch(error){console.error(error)}
+  });
+}
+
 async function initDashboard() {
   if (!document.body.classList.contains("admin-dashboard")) return;
   const session = await guardDashboard();
@@ -311,7 +489,9 @@ async function initDashboard() {
 
   document.getElementById("adminUsername").textContent = session.username;
   initCmsControls();
+  initLifestyleAdmin();
   try { await loadCms(); } catch (error) { console.error(error); }
+  try { await loadLifestyleAdmin(); } catch (error) { console.error(error); }
   document.getElementById("sessionExpiry").textContent =
     new Date(session.expiresAt).toLocaleString();
 
