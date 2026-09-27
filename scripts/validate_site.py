@@ -48,6 +48,7 @@ NAV_TARGETS = {
     "shows.html",
     "schedule.html",
     "djs.html",
+    "lifestyle.html",
     "chat.html",
     "contact.html",
 }
