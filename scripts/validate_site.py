@@ -104,11 +104,18 @@ for page_name in PAGES:
     if 'class="sunshine-page' not in text:
         fail(f"{page_name}: missing shared sunshine-page class")
 
-    expected_css = "assets/css/styles.css?v=control1" if page_name in {"index.html", "live-radio.html"} else "assets/css/styles.css?v=phase3a"
+    if page_name == "index.html":
+        expected_css = "assets/css/styles.css?v=control1"
+        expected_js = "assets/js/site.js?v=control1"
+    elif page_name == "live-radio.html":
+        expected_css = "assets/css/styles.css?v=control2"
+        expected_js = "assets/js/site.js?v=control2"
+    else:
+        expected_css = "assets/css/styles.css?v=phase3a"
+        expected_js = "assets/js/site.js?v=cms1"
+
     if expected_css not in text:
         fail(f"{page_name}: expected stylesheet cache key missing")
-
-    expected_js = "assets/js/site.js?v=control1" if page_name in {"index.html", "live-radio.html"} else "assets/js/site.js?v=cms1"
     if expected_js not in text:
         fail(f"{page_name}: expected site.js cache key missing")
 
