@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Admin Dashboard | SunShine Web Radio</title>
+<link rel="icon" href="../assets/sunshine-logo.webp" type="image/webp">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css?v=1">
+</head><body class="admin-dashboard">
+<div class="admin-shell">
+<header class="admin-topbar">
+<a class="admin-brand" href="../index.html"><img src="../assets/sunshine-logo.webp" alt="SunShine"><div><strong>SunShine Admin</strong><span>Private control area</span></div></a>
+<div class="admin-actions"><button class="ghost-btn" id="logoutBtn" type="button">Logout</button></div>
+</header>
+<main class="admin-main">
+<div class="admin-header"><div><h1>Admin <span>Dashboard</span></h1><p>Signed in as <strong id="adminUsername">—</strong></p></div><div class="status-pill"><i></i>Authenticated</div></div>
+<div class="admin-grid">
+<section class="admin-card"><h3>Live Radio</h3><div class="metric">CONNECTED<small>Jazler → BUTT → Caster.fm → Website</small></div></section>
+<section class="admin-card"><h3>Now Playing</h3><div class="metric">NEXT<small>Jazler metadata bridge integration</small></div></section>
+<section class="admin-card"><h3>Session</h3><div class="metric">SECURE<small>Expires: <span id="sessionExpiry">—</span></small></div></section>
+<section class="admin-card wide"><h2>Station Control</h2><dl class="kv">
+<dt>Website</dt><dd>GitHub Pages</dd>
+<dt>Streaming</dt><dd>Caster.fm / Icecast</dd>
+<dt>Encoder</dt><dd>BUTT 1.47.0</dd>
+<dt>Automation</dt><dd>Jazler RadioStar 2.2.30</dd>
+<dt>Admin backend</dt><dd>Supabase secure Edge Function</dd>
+</dl></section>
+<section class="admin-card"><h2>Management Areas</h2><p>Schedule, Shows, DJs, Contact, Social links and Now Playing controls will be connected here as the next admin modules.</p><div class="lock-note">No admin secrets are stored in the public website repository.</div></section>
+<section class="admin-card full"><h2>Change Password</h2>
+<form class="change-password" id="passwordForm">
+<input id="currentPassword" type="password" autocomplete="current-password" placeholder="Current password" required>
+<input id="newPassword" type="password" autocomplete="new-password" minlength="12" placeholder="New password (12+ characters)" required>
+<button class="primary-btn" type="submit">Change Password</button>
+</form><p id="passwordStatus" class="form-status" aria-live="polite"></p>
+</section>
+</div></main></div>
+<script src="admin.js?v=1"></script>
+</body></html>
