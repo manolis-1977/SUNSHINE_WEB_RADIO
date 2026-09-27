@@ -735,12 +735,79 @@ function setupChat(feedId, formId, inputId) {
 }
 
 function setupEmojiButtons() {
+  const emojis = [
+    "😀", "😃", "😂", "🤣", "😊", "😍", "🥰", "😘",
+    "😎", "🤩", "🥳", "😉", "❤️", "🧡", "💛", "💚",
+    "💙", "💜", "💕", "💖", "🔥", "🎵", "🎶", "🎧",
+    "☀️", "✨", "👏", "👍"
+  ];
+
+  const closeAllEmojiPickers = except => {
+    document.querySelectorAll(".emoji-picker.is-open").forEach(picker => {
+      if (picker !== except) picker.classList.remove("is-open");
+    });
+  };
+
   document.querySelectorAll("[data-emoji-target]").forEach(button => {
-    button.addEventListener("click", () => {
-      const input = document.getElementById(button.dataset.emojiTarget);
-      if (!input) return;
-      input.value = `${input.value}${input.value ? " " : ""}☀️`;
+    const input = document.getElementById(button.dataset.emojiTarget);
+    const compose = button.closest(".chat-compose");
+    if (!input || !compose) return;
+
+    const picker = document.createElement("div");
+    picker.className = "emoji-picker";
+    picker.setAttribute("role", "dialog");
+    picker.setAttribute("aria-label", "Choose an emoji");
+    picker.innerHTML = emojis.map(emoji =>
+      `<button type="button" class="emoji-choice" data-emoji="${emoji}" aria-label="Add ${emoji}">${emoji}</button>`
+    ).join("");
+    compose.appendChild(picker);
+
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-haspopup", "dialog");
+    button.setAttribute("aria-label", "Choose emoji");
+
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      const willOpen = !picker.classList.contains("is-open");
+      closeAllEmojiPickers(picker);
+      picker.classList.toggle("is-open", willOpen);
+      button.setAttribute("aria-expanded", String(willOpen));
+    });
+
+    picker.addEventListener("click", event => {
+      event.stopPropagation();
+      const choice = event.target.closest("[data-emoji]");
+      if (!choice) return;
+
+      const emoji = choice.dataset.emoji || "";
+      const start = Number.isInteger(input.selectionStart) ? input.selectionStart : input.value.length;
+      const end = Number.isInteger(input.selectionEnd) ? input.selectionEnd : start;
+      const nextValue = input.value.slice(0, start) + emoji + input.value.slice(end);
+      const maxLength = input.maxLength > 0 ? input.maxLength : 220;
+      if (nextValue.length <= maxLength) {
+        input.value = nextValue;
+        const caret = start + emoji.length;
+        input.setSelectionRange?.(caret, caret);
+      }
+
+      picker.classList.remove("is-open");
+      button.setAttribute("aria-expanded", "false");
       input.focus();
+    });
+  });
+
+  document.addEventListener("click", () => {
+    closeAllEmojiPickers();
+    document.querySelectorAll("[data-emoji-target]").forEach(button => {
+      button.setAttribute("aria-expanded", "false");
+    });
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    closeAllEmojiPickers();
+    document.querySelectorAll("[data-emoji-target]").forEach(button => {
+      button.setAttribute("aria-expanded", "false");
     });
   });
 }
