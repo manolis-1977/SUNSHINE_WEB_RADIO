@@ -66,3 +66,12 @@ width:100%;border:1px solid rgba(255,207,74,.27);border-radius:10px;background:#
   background:#06101d;color:#fff;padding:10px 11px;outline:none
 }
 @media(max-width:850px){.ad-admin-grid{grid-template-columns:1fr}}
+
+
+/* ===== TRANSPARENT ADMIN LOGO LOCK ===== */
+.admin-brand img,
+.auth-logo {
+  background: transparent !important;
+  background-color: transparent !important;
+  object-fit: contain;
+}
