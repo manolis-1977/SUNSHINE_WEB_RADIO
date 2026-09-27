@@ -96,6 +96,90 @@ function setText(selector, value) {
   document.querySelectorAll(selector).forEach(el => { el.textContent = value; });
 }
 
+function safeHttpUrl(value) {
+  try {
+    const url = new URL(String(value || ""), window.location.href);
+    if (url.protocol === "http:" || url.protocol === "https:") return url.href;
+  } catch {}
+  return "";
+}
+
+function renderAdSlot(elementId, config) {
+  const root = document.getElementById(elementId);
+  if (!root) return;
+  root.innerHTML = "";
+  root.classList.remove("is-active");
+  if (!config?.enabled) return;
+
+  const mediaUrl = safeHttpUrl(config.mediaUrl);
+  if (!mediaUrl) return;
+
+  root.classList.add("is-active");
+
+  const label = document.createElement("span");
+  label.className = "home-ad-label";
+  label.textContent = config.label || "Advertisement";
+  root.appendChild(label);
+
+  const media = document.createElement(config.type === "image" ? "img" : "video");
+  media.className = "home-ad-media";
+  media.src = mediaUrl;
+  media.setAttribute("aria-label", config.label || "Advertisement");
+  media.style.objectFit = config.fit || "cover";
+
+  if (media.tagName === "VIDEO") {
+    media.autoplay = Boolean(config.autoplay);
+    media.muted = config.muted !== false;
+    media.loop = Boolean(config.loop);
+    media.playsInline = true;
+    media.controls = true;
+    media.preload = "metadata";
+  } else {
+    media.alt = config.label || "Advertisement";
+    media.loading = "lazy";
+  }
+
+  const clickUrl = safeHttpUrl(config.clickUrl);
+  if (clickUrl) {
+    const link = document.createElement("a");
+    link.className = "home-ad-link";
+    link.href = clickUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer sponsored";
+    link.appendChild(media);
+    root.appendChild(link);
+  } else {
+    root.appendChild(media);
+  }
+}
+
+function applyLiveAndChatContent() {
+  const live = SUNSHINE_PUBLIC_CONTENT.live || {};
+  if (document.body.classList.contains("page-live")) {
+    const heading = document.querySelector(".subpage-hero h1");
+    if (heading && live.heroTitle) heading.textContent = live.heroTitle;
+    setText(".page-live .subpage-hero p", live.heroSubtitle);
+    setText(".page-live .station-label strong", live.stationLabel);
+    setText(".page-live .station-label span", live.streamLabel);
+    setText(".page-live #trackTitle", live.fallbackTrackTitle);
+    setText(".page-live #trackArtist", live.fallbackTrackArtist);
+    const player = document.getElementById("player");
+    if (player && live.playerEnabled === false) player.hidden = true;
+  }
+
+  const chat = SUNSHINE_PUBLIC_CONTENT.chat || {};
+  const liveChat = document.getElementById("liveChat");
+  if (liveChat) {
+    liveChat.hidden = chat.enabled === false;
+    const title = document.getElementById("liveChatTitle");
+    if (title && chat.title) title.textContent = chat.title;
+    setText("#liveChatSubtitle", chat.subtitle);
+    setText("#liveChatStatusLabel", chat.statusLabel);
+    const input = document.getElementById("chatInputLive");
+    if (input && chat.placeholder) input.placeholder = chat.placeholder;
+  }
+}
+
 function applyPublicContent() {
   const site = SUNSHINE_PUBLIC_CONTENT.site || {};
   if (document.body.classList.contains("page-home")) {
@@ -124,6 +208,11 @@ function applyPublicContent() {
     }
   });
 
+  const ads = SUNSHINE_PUBLIC_CONTENT.ads || {};
+  renderAdSlot("homeAdLeft", ads.homeLeft);
+  renderAdSlot("homeAdRight", ads.homeRight);
+  applyLiveAndChatContent();
+
   const contact = SUNSHINE_PUBLIC_CONTENT.contact || {};
   const emailEl = document.getElementById("publicContactEmail");
   const phoneEl = document.getElementById("publicContactPhone");
@@ -136,7 +225,6 @@ function applyPublicContent() {
   const visibility = [
     ["#schedule", features.homeSchedule],
     ["#djs", features.homeDjs],
-    ["#chat", features.homeChat],
     [".listen-everywhere", features.listenEverywhere]
   ];
   visibility.forEach(([selector, enabled]) => {
@@ -482,6 +570,7 @@ async function bootstrapSunShine() {
   renderDjs();
   renderShows();
   setupChat("chatFeed", "chatForm", "chatInput");
+  setupChat("chatFeedLive", "chatFormLive", "chatInputLive");
   setupChat("chatFeedPage", "chatFormPage", "chatInputPage");
   setYear();
 }
