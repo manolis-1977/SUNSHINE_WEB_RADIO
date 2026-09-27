@@ -13,6 +13,7 @@ PAGES = [
     "shows.html",
     "schedule.html",
     "djs.html",
+    "lifestyle.html",
     "chat.html",
     "contact.html",
 ]
@@ -22,6 +23,7 @@ REQUIRED_IDS = {
     "live-radio.html": ["player", "liveChat", "chatFeedLive", "chatFormLive", "chatInputLive"],
     "schedule.html": ["fullScheduleList", "scheduleLiveStatus"],
     "djs.html": ["djGridFull"],
+    "lifestyle.html": ["lifestyleTitle", "lifestyleSubtitle", "lifestyleFilters", "lifestyleStatus", "lifestyleGrid"],
     "chat.html": ["chatFeedPage", "chatFormPage", "chatInputPage"],
     "contact.html": ["contactForm", "contactName", "contactEmail", "contactMessage", "contactFormStatus"],
 }
