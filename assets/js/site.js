@@ -216,6 +216,12 @@ function applyPublicContent() {
   renderAdSlot("homeAdRight", ads.homeRight);
   applyLiveAndChatContent();
 
+  const lifestyle = SUNSHINE_PUBLIC_CONTENT.lifestyle || {};
+  if (document.body.classList.contains("page-lifestyle")) {
+    setText("#lifestyleTitle", lifestyle.title ? "SunShine " + lifestyle.title : "SunShine Life Style");
+    setText("#lifestyleSubtitle", lifestyle.subtitle);
+  }
+
   const contact = SUNSHINE_PUBLIC_CONTENT.contact || {};
   const emailEl = document.getElementById("publicContactEmail");
   const phoneEl = document.getElementById("publicContactPhone");
