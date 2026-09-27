@@ -3792,3 +3792,40 @@ main,
   .sunshine-page:not(.page-home) .subpage-main{padding-top:6px!important}
   .sunshine-page:not(.page-home) .subpage-hero{padding-top:10px!important}
 }
+
+
+/* ===== SECURE USERNAME CHAT ===== */
+.chat-login-panel{
+  display:grid;
+  gap:12px;
+  margin:14px 0;
+  padding:14px;
+  border:1px solid rgba(255,205,66,.34);
+  border-radius:15px;
+  background:linear-gradient(180deg,rgba(8,20,35,.88),rgba(4,12,22,.92));
+}
+.chat-login-copy{display:grid;gap:4px}
+.chat-login-copy strong{color:#ffe16d}
+.chat-login-copy span,.chat-login-status{color:var(--muted);font-size:.78rem;line-height:1.45}
+.chat-login-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}
+.chat-login-form input{
+  min-width:0;border:1px solid rgba(255,205,66,.34);border-radius:12px;
+  background:#06101d;color:#fff;padding:11px 12px;font:inherit;outline:none
+}
+.chat-login-form input:focus{border-color:#ffe477;box-shadow:0 0 0 3px rgba(255,190,24,.08)}
+.chat-login-status{min-height:1.1em;margin:0;color:#ff9daf}
+.chat-user-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:8px 0 12px;padding:9px 12px;border:1px solid rgba(24,230,143,.24);
+  border-radius:12px;background:rgba(24,230,143,.055);font-size:.78rem
+}
+.chat-user-bar strong{color:#ffe16d}
+.chat-logout{
+  border:1px solid rgba(255,205,66,.26);border-radius:9px;background:transparent;
+  color:#dbe6f1;padding:7px 9px;font:inherit;font-size:.72rem;cursor:pointer
+}
+.chat-compose[hidden],.chat-login-panel[hidden],.chat-user-bar[hidden]{display:none!important}
+@media(max-width:620px){
+  .chat-login-form{grid-template-columns:1fr}
+  .chat-user-bar{align-items:flex-start;flex-direction:column}
+}
