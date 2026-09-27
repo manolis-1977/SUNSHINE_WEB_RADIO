@@ -631,7 +631,8 @@ async function renderRemoteChat(feed) {
       return;
     }
     feed.innerHTML = messages.map(messageMarkup).join("");
-    feed.scrollTop = feed.scrollHeight;
+    // Newest messages are rendered first by the API. Keep the feed pinned to the top.
+    feed.scrollTop = 0;
   } catch {
     feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>Chat messages are temporarily unavailable.</p></div>';
   }
