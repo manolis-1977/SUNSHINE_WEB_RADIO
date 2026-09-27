@@ -71,8 +71,13 @@ jobs:
             exit 1
           }
 
-          grep -Fq "SunShine Chat" index.html || {
-            echo "::error file=index.html::SunShine Chat section is missing"
+          if grep -Fq 'id="chat"' index.html; then
+            echo "::error file=index.html::Chat must not remain on Home"
+            exit 1
+          fi
+
+          grep -Fq 'id="liveChat"' live-radio.html || {
+            echo "::error file=live-radio.html::SunShine Chat must be present on Live Radio"
             exit 1
           }
 
