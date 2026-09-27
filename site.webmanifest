@@ -9,9 +9,9 @@
   "description": "SunShine Web Radio — live music and non-stop good vibes.",
   "icons": [
     {
-      "src": "assets/sunshine-logo.webp",
+      "src": "assets/sunshine-logo-transparent.png",
       "sizes": "512x512",
-      "type": "image/webp",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
