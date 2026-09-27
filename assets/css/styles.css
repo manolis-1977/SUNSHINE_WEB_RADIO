@@ -3060,8 +3060,9 @@ main,
 
 /* PHASE 2B LOGO BLEND */
 .page-home .hero-logo{
-  mix-blend-mode:multiply;
-  filter:brightness(1.22) saturate(1.45) contrast(1.05) drop-shadow(0 0 18px rgba(255,223,118,.55)) drop-shadow(0 0 52px rgba(255,153,0,.32));
+  mix-blend-mode:normal;
+  background:transparent!important;
+  filter:brightness(1.10) saturate(1.18) contrast(1.03) drop-shadow(0 0 18px rgba(255,223,118,.55)) drop-shadow(0 0 52px rgba(255,153,0,.32));
 }
 
 /* ===== PHASE 2C: STRONGER GLOW / BRIGHTNESS PASS ===== */
@@ -3588,4 +3589,16 @@ main,
 }
 @media(max-width:1100px){
   .page-live .subpage-hero{padding-top:16px !important}
+}
+
+
+/* ===== TRANSPARENT PNG LOGO LOCK ===== */
+.brand img,
+.hero-logo,
+.footer-brand img,
+.subpage-hero .hero-logo-small,
+.error-card img {
+  background: transparent !important;
+  background-color: transparent !important;
+  object-fit: contain;
 }
