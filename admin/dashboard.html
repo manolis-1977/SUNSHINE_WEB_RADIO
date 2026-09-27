@@ -6,7 +6,7 @@
 <link rel="icon" href="../assets/sunshine-logo-transparent.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=lifestyle1">
+<link rel="stylesheet" href="admin.css?v=securechat1">
 </head><body class="admin-dashboard">
 <div class="admin-shell">
 <header class="admin-topbar">
@@ -164,6 +164,29 @@
   <p class="form-status" id="status_chat"></p>
 </section>
 
+<section class="admin-card full cms-panel" id="chatModerationPanel">
+  <div class="cms-head">
+    <div>
+      <h2>Chat Moderation</h2>
+      <p>Full control of usernames and public messages: delete messages, block users, ban users and release reserved usernames.</p>
+    </div>
+    <div class="admin-actions">
+      <button class="ghost-btn" id="reloadChatModeration" type="button">Reload Chat</button>
+    </div>
+  </div>
+  <div class="chat-admin-grid">
+    <div class="chat-admin-column">
+      <h3>Users</h3>
+      <div id="chatUsersAdmin" class="chat-admin-list"></div>
+    </div>
+    <div class="chat-admin-column">
+      <h3>Messages</h3>
+      <div id="chatMessagesAdmin" class="chat-admin-list"></div>
+    </div>
+  </div>
+  <p class="form-status" id="chatModerationStatus"></p>
+</section>
+
 <section class="admin-card full cms-panel" id="lifestyleAdminPanel">
   <div class="cms-head"><div><h2>Life Style</h2><p>Manage the Life Style page and its content feeds.</p></div><div class="admin-actions"><button class="ghost-btn" id="refreshLifestyleAll" type="button">Refresh Now</button><button class="primary-btn" type="button" data-save="lifestyle">Save Page</button></div></div>
   <div class="cms-form-grid">
@@ -195,5 +218,5 @@
 </form><p id="passwordStatus" class="form-status" aria-live="polite"></p>
 </section>
 </div></main></div>
-<script src="admin.js?v=lifestyle1"></script>
+<script src="admin.js?v=securechat1"></script>
 </body></html>
