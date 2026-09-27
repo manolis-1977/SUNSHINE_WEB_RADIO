@@ -136,8 +136,8 @@ for page_name in PAGES:
     if 'class="sunshine-page' not in text:
         fail(f"{page_name}: missing shared sunshine-page class")
 
-    expected_css = "assets/css/styles.css?v=lifestyle1"
-    expected_js = "assets/js/site.js?v=lifestyle1"
+    expected_css = "assets/css/styles.css?v=adminshortcut1"
+    expected_js = "assets/js/site.js?v=adminshortcut1"
 
     if expected_css not in text:
         fail(f"{page_name}: expected stylesheet cache key missing")
@@ -159,6 +159,9 @@ for page_name in PAGES:
 
     if parser.active_nav_links != 1:
         fail(f"{page_name}: expected exactly one active navigation link, got {parser.active_nav_links}")
+
+    if 'href="admin/index.html"' not in text or 'class="admin-nav"' not in text:
+        fail(f"{page_name}: top navigation Admin shortcut is missing")
 
     for required_id in REQUIRED_IDS.get(page_name, []):
         if required_id not in parser.ids:
@@ -228,6 +231,7 @@ for marker in [
     "TRANSPARENT PNG LOGO LOCK",
     "PLAYER AUTO / MANUAL MODE",
     "LIFE STYLE PUBLIC PAGE",
+    "ADMIN TOP NAV SHORTCUT",
 ]:
     if marker not in css:
         fail(f"assets/css/styles.css: missing marker '{marker}'")
