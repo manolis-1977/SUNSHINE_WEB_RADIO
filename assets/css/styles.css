@@ -3831,3 +3831,36 @@ main,
   .chat-login-form{grid-template-columns:1fr}
   .chat-user-bar{align-items:flex-start;flex-direction:column}
 }
+
+
+/* ===== CHAT ONE-COLUMN HARD LOCK ===== */
+.chat-feed,
+.page-live .live-chat-panel .chat-feed,
+.page-chat .chat-feed {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-auto-flow: row !important;
+  gap: 10px !important;
+  align-content: start;
+}
+
+.chat-message,
+.page-live .live-chat-panel .chat-message,
+.page-chat .chat-message {
+  width: 100%;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+}
+
+.message-copy {
+  min-width: 0;
+  width: 100%;
+}
+
+.message-bubble {
+  width: fit-content;
+  max-width: 100%;
+}
