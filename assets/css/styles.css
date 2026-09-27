@@ -3943,3 +3943,106 @@ main,
   outline: none;
   transform: translateY(-1px);
 }
+
+
+/* ===== LIVE CHAT COMPACT HEADER + DENSITY ===== */
+@media (min-width: 761px) {
+  .page-live .live-chat-panel {
+    padding: 13px 16px 14px !important;
+  }
+
+  .page-live .live-chat-panel .chat-heading {
+    gap: 8px;
+    align-items: center;
+  }
+
+  .page-live .live-chat-panel .chat-title-row {
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .page-live .live-chat-panel .chat-title-row h2 {
+    font-size: clamp(1.05rem, 1.35vw, 1.28rem) !important;
+    line-height: 1.05;
+    letter-spacing: -.025em;
+    white-space: nowrap;
+  }
+
+  .page-live .live-chat-panel .chat-title-row h2 span {
+    display: inline !important;
+  }
+
+  .page-live .live-chat-panel .chat-icon {
+    width: 27px;
+    height: 24px;
+    flex: 0 0 27px;
+    font-size: .62rem;
+  }
+
+  .page-live .live-chat-panel .chat-heading p {
+    margin: 3px 0 0 34px !important;
+    font-size: .68rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .page-live .live-chat-panel .chat-status {
+    flex: 0 0 auto;
+    font-size: .63rem;
+  }
+
+  .page-live .live-chat-panel .chat-status > span {
+    padding: 6px 8px;
+    white-space: nowrap;
+  }
+
+  .page-live .live-chat-panel .online-dot {
+    width: 7px;
+    height: 7px;
+    margin-right: 5px;
+  }
+
+  .page-live .live-chat-panel .chat-user-bar {
+    margin: 6px 0 7px;
+    padding: 7px 9px;
+    font-size: .69rem;
+  }
+
+  .page-live .live-chat-panel .chat-logout {
+    padding: 5px 7px;
+    font-size: .64rem;
+  }
+
+  .page-live .live-chat-panel .chat-feed {
+    gap: 6px !important;
+    margin-top: 4px !important;
+  }
+
+  .page-live .live-chat-panel .chat-message {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .page-live .live-chat-panel .avatar {
+    width: 30px;
+    height: 30px;
+    font-size: .62rem;
+  }
+
+  .page-live .live-chat-panel .message-meta {
+    gap: 6px;
+    margin-bottom: 2px;
+    font-size: .64rem;
+  }
+
+  .page-live .live-chat-panel .message-bubble {
+    padding: 5px 8px;
+    border-radius: 10px;
+    font-size: .72rem;
+    line-height: 1.24;
+  }
+
+  .page-live .live-chat-panel .chat-compose {
+    margin-top: 8px !important;
+  }
+}
