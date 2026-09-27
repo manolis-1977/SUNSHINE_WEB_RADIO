@@ -75,3 +75,32 @@ width:100%;border:1px solid rgba(255,207,74,.27);border-radius:10px;background:#
   background-color: transparent !important;
   object-fit: contain;
 }
+
+
+/* ===== LIFE STYLE ADMIN CONTROLS ===== */
+.lifestyle-admin-section{margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,196,38,.20)}
+.cms-head.compact{margin-bottom:12px}
+#lifestyleSourcesEditor,#lifestyleArticlesEditor{display:grid;gap:10px}
+.lifestyle-source-row{
+  display:grid;
+  grid-template-columns:minmax(130px,.9fr) minmax(180px,1.25fr) minmax(220px,1.7fr) 130px 90px 90px 80px auto;
+  gap:8px;align-items:end;padding:12px;border:1px solid rgba(255,196,38,.18);
+  border-radius:14px;background:rgba(4,12,22,.42)
+}
+.lifestyle-source-row label{display:grid;gap:5px;color:#dfe8f3;font-size:.75rem;font-weight:700}
+.lifestyle-source-row input,.lifestyle-source-row select{
+  width:100%;min-width:0;border:1px solid rgba(255,207,74,.27);border-radius:9px;
+  background:#06101d;color:#fff;padding:9px 10px
+}
+.lifestyle-source-meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:12px;color:var(--muted);font-size:.75rem}
+.lifestyle-source-meta .error{color:#ff91a2}
+.lifestyle-row-actions{display:flex;gap:6px;align-items:center}
+.lifestyle-article-admin-row{
+  display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;
+  padding:11px 12px;border:1px solid rgba(255,196,38,.16);border-radius:12px;background:rgba(4,12,22,.38)
+}
+.lifestyle-article-admin-row strong{display:block;margin-bottom:4px}
+.lifestyle-article-admin-row small{color:var(--muted)}
+.lifestyle-article-admin-row label{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700}
+@media(max-width:1200px){.lifestyle-source-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.lifestyle-source-row,.lifestyle-article-admin-row{grid-template-columns:1fr}}
