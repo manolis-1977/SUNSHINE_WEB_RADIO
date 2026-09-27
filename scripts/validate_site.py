@@ -136,8 +136,8 @@ for page_name in PAGES:
     if 'class="sunshine-page' not in text:
         fail(f"{page_name}: missing shared sunshine-page class")
 
-    expected_css = "assets/css/styles.css?v=adminshortcut1"
-    expected_js = "assets/js/site.js?v=adminshortcut1"
+    expected_css = "assets/css/styles.css?v=compact-subpages1"
+    expected_js = "assets/js/site.js?v=compact-subpages1"
 
     if expected_css not in text:
         fail(f"{page_name}: expected stylesheet cache key missing")
@@ -159,6 +159,11 @@ for page_name in PAGES:
 
     if parser.active_nav_links != 1:
         fail(f"{page_name}: expected exactly one active navigation link, got {parser.active_nav_links}")
+
+    if page_name != "index.html" and "hero-logo-small" in text:
+        fail(f"{page_name}: duplicate hero logo must be removed; header logo is the only page logo")
+    if 'href="lifestyle.html"' not in text:
+        fail(f"{page_name}: Life Style must remain visible in navigation")
 
     if 'href="admin/index.html"' not in text or 'class="admin-nav"' not in text:
         fail(f"{page_name}: top navigation Admin shortcut is missing")
@@ -232,6 +237,7 @@ for marker in [
     "PLAYER AUTO / MANUAL MODE",
     "LIFE STYLE PUBLIC PAGE",
     "ADMIN TOP NAV SHORTCUT",
+    "COMPACT SUBPAGE HERO / PANEL LOCK",
 ]:
     if marker not in css:
         fail(f"assets/css/styles.css: missing marker '{marker}'")
