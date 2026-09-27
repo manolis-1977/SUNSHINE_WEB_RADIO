@@ -15,14 +15,7 @@ const SUNSHINE_DJS = [
   { initials: "ED", name: "Elena D.", show: "Retro Time", time: "18:00 - 20:00", start: "18:00", end: "20:00" }
 ];
 
-const SUNSHINE_INITIAL_MESSAGES = [
-  { user: "SofiaG", time: "11:24", text: "This station always puts me in a good mood! ☀️💛" },
-  { user: "ChrisDJ", time: "11:27", text: "Amazing track! Keep the good vibes coming! 🙌" },
-  { user: "NikosP", time: "11:25", text: "SunShine Radio = the best vibes on the web! 🎧🔥" },
-  { user: "Katerina", time: "11:28", text: "SunShine family all over the world! 🌍💛" },
-  { user: "EvaM", time: "11:26", text: "Listening from Thessaloniki! 🇬🇷 Love this station! 💙" },
-  { user: "AlexR", time: "11:29", text: "Perfect morning show! Coffee, music and SunShine! ☕🎶" }
-];
+const SUNSHINE_INITIAL_MESSAGES = []
 
 const CHAT_STORAGE_KEY = "sunshine_chat_preview_v1";
 const CONTACT_STORAGE_KEY = "sunshine_contact_draft_v1";
@@ -192,7 +185,12 @@ function messageMarkup(message) {
 
 function renderChatInto(feed) {
   if (!feed) return;
-  feed.innerHTML = loadChatMessages().map(messageMarkup).join("");
+  const messages = loadChatMessages();
+  if (!messages.length) {
+    feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>No public messages yet. The full multi-user chat will be activated before community launch.</p></div>';
+    return;
+  }
+  feed.innerHTML = messages.map(messageMarkup).join("");
 }
 
 function setupChat(feedId, formId, inputId) {
