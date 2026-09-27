@@ -33,6 +33,7 @@ jobs:
             shows.html \
             schedule.html \
             djs.html \
+            lifestyle.html \
             chat.html \
             contact.html \
             assets/css/styles.css \
@@ -91,7 +92,7 @@ jobs:
             exit 1
           }
 
-          for page in live-radio.html shows.html schedule.html djs.html chat.html contact.html
+          for page in live-radio.html shows.html schedule.html djs.html lifestyle.html chat.html contact.html
           do
             grep -Fq 'class="sunshine-page' "$page" || {
               echo "::error file=$page::Shared SunShine page background class is missing"
@@ -109,6 +110,7 @@ jobs:
         run: |
           node --check assets/js/site.js
           node --check assets/js/app.js
+          node --check admin/admin.js
 
       - name: Run pre-launch site validator
         run: python3 scripts/validate_site.py
