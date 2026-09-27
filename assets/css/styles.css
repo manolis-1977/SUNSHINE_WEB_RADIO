@@ -4137,40 +4137,40 @@ main,
 }
 
 
-/* ===== LIVE CHAT TYPOGRAPHY READABILITY V2 ===== */
+/* ===== LIVE CHAT TYPOGRAPHY READABILITY V3 ===== */
 @media (min-width: 761px) {
   .page-live .live-chat-panel .chat-title-row h2 {
-    font-size: 1.12rem !important;
-    line-height: 1.12 !important;
+    font-size: 1.16rem !important;
+    line-height: 1.14 !important;
   }
 
   .page-live .live-chat-panel .chat-heading p {
-    font-size: .76rem !important;
-    line-height: 1.3 !important;
+    font-size: .79rem !important;
+    line-height: 1.32 !important;
   }
 
   .page-live .live-chat-panel .chat-status {
-    font-size: .72rem !important;
+    font-size: .75rem !important;
   }
 
   .page-live .live-chat-panel .chat-status > span {
-    font-size: .68rem !important;
+    font-size: .70rem !important;
     line-height: 1.2 !important;
   }
 
   .page-live .live-chat-panel .chat-user-bar {
-    font-size: .84rem !important;
-    line-height: 1.3 !important;
+    font-size: .88rem !important;
+    line-height: 1.32 !important;
   }
 
   .page-live .live-chat-panel .chat-logout {
-    font-size: .76rem !important;
+    font-size: .79rem !important;
   }
 
   .page-live .live-chat-panel .message-meta {
-    font-size: .92rem !important;
-    line-height: 1.25 !important;
-    margin-bottom: 3px !important;
+    font-size: .98rem !important;
+    line-height: 1.26 !important;
+    margin-bottom: 4px !important;
   }
 
   .page-live .live-chat-panel .message-meta strong {
@@ -4178,35 +4178,35 @@ main,
   }
 
   .page-live .live-chat-panel .message-bubble {
-    font-size: 1.04rem !important;
-    line-height: 1.38 !important;
-    padding: 6px 9px !important;
+    font-size: 1.10rem !important;
+    line-height: 1.40 !important;
+    padding: 7px 10px !important;
   }
 
   .page-live .live-chat-panel .chat-compose input {
-    font-size: 1rem !important;
-    line-height: 1.25 !important;
+    font-size: 1.03rem !important;
+    line-height: 1.28 !important;
   }
 
   .page-live .live-chat-panel .emoji-button,
   .page-live .live-chat-panel .send-button {
-    font-size: .98rem !important;
+    font-size: 1.01rem !important;
   }
 }
 
 @media (max-width: 760px) {
   .page-live .live-chat-panel .message-meta {
-    font-size: .86rem !important;
+    font-size: .90rem !important;
   }
 
   .page-live .live-chat-panel .message-bubble {
-    font-size: 1rem !important;
-    line-height: 1.38 !important;
+    font-size: 1.04rem !important;
+    line-height: 1.40 !important;
   }
 
   .page-live .live-chat-panel .chat-user-bar,
   .page-live .live-chat-panel .chat-compose input,
   .page-live .live-chat-panel .send-button {
-    font-size: .95rem !important;
+    font-size: .98rem !important;
   }
 }
