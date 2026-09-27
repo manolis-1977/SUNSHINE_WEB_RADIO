@@ -3712,3 +3712,26 @@ main,
   .lifestyle-filters{justify-content:flex-start}
 }
 @media(max-width:680px){.lifestyle-grid{grid-template-columns:1fr}}
+
+
+/* ===== ADMIN TOP NAV SHORTCUT ===== */
+.main-nav a.admin-nav{
+  margin-left:8px;
+  color:#ffe477;
+  border-color:rgba(255,211,82,.45);
+  background:linear-gradient(135deg,rgba(255,210,79,.10),rgba(255,130,0,.10));
+  box-shadow:0 0 16px rgba(255,181,24,.12),inset 0 0 12px rgba(255,210,79,.035);
+  font-weight:800;
+}
+.main-nav a.admin-nav:hover{
+  color:#fff8d7;
+  border-color:rgba(255,226,118,.82);
+  box-shadow:0 0 22px rgba(255,202,60,.24),0 0 42px rgba(255,132,0,.10);
+}
+@media(max-width:1080px){
+  .main-nav a.admin-nav{
+    margin-left:0;
+    margin-top:5px;
+    text-align:center;
+  }
+}
