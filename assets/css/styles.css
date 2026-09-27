@@ -3556,3 +3556,36 @@ main,
   .page-live .live-radio-layout{grid-template-columns:1fr}
   .page-live .live-chat-panel{position:static}
 }
+
+
+/* ===== PHASE 4B: LIVE PAGE ABOVE-THE-FOLD COMPACT LAYOUT ===== */
+.page-live .subpage-hero{
+  padding-top:18px !important;
+  padding-bottom:12px !important;
+}
+.page-live .subpage-hero .container{
+  display:grid;
+  justify-items:center;
+  gap:4px;
+}
+.page-live .subpage-hero h1{
+  margin:0 !important;
+  font-size:clamp(2.2rem,4.2vw,4.1rem);
+  line-height:1.02;
+}
+.page-live .subpage-hero p{
+  margin:6px 0 0 !important;
+}
+.page-live .subpage-section{
+  padding-top:10px !important;
+}
+.page-live .live-radio-layout{
+  margin-top:0 !important;
+}
+.page-live .player-card,
+.page-live .live-chat-panel{
+  margin-top:0 !important;
+}
+@media(max-width:1100px){
+  .page-live .subpage-hero{padding-top:16px !important}
+}
