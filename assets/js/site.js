@@ -271,6 +271,12 @@ async function loadLifestyleArticles() {
   const status = document.getElementById("lifestyleStatus");
   try {
     const cfg = SUNSHINE_PUBLIC_CONTENT.lifestyle || {};
+    if (cfg.enabled === false) {
+      if (status) status.textContent = cfg.emptyMessage || "Life Style is currently unavailable.";
+      const grid = document.getElementById("lifestyleGrid");
+      if (grid) grid.replaceChildren();
+      return;
+    }
     const limit = Math.max(1, Math.min(200, Number(cfg.maxArticles || 48)));
     const response = await fetch(SUNSHINE_LIFESTYLE_API, {
       method: "POST",
