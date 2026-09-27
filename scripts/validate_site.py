@@ -136,9 +136,9 @@ for page_name in PAGES:
     if 'class="sunshine-page' not in text:
         fail(f"{page_name}: missing shared sunshine-page class")
 
-    if not re.search(r'assets/css/styles\\.css\\?v=[A-Za-z0-9._-]+', text):
+    if not re.search(r'assets/css/styles\.css\?v=[A-Za-z0-9._-]+', text):
         fail(f"{page_name}: expected stylesheet cache key missing")
-    if not re.search(r'assets/js/site\\.js\\?v=[A-Za-z0-9._-]+', text):
+    if not re.search(r'assets/js/site\.js\?v=[A-Za-z0-9._-]+', text):
         fail(f"{page_name}: expected site.js cache key missing")
 
     if page_name in {"live-radio.html", "chat.html"}:
