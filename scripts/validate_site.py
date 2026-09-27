@@ -33,6 +33,11 @@ PRELAUNCH_FILES = [
     "robots.txt",
     "sitemap.xml",
     "site.webmanifest",
+    "admin/index.html",
+    "admin/setup.html",
+    "admin/dashboard.html",
+    "admin/admin.css",
+    "admin/admin.js",
 ]
 
 NAV_TARGETS = {
@@ -132,6 +137,20 @@ for page_name in PAGES:
     missing_nav = NAV_TARGETS - nav_links
     if missing_nav:
         fail(f"{page_name}: navigation missing targets {sorted(missing_nav)}")
+
+admin_login = (ROOT / "admin/index.html").read_text(encoding="utf-8")
+admin_dashboard = (ROOT / "admin/dashboard.html").read_text(encoding="utf-8")
+admin_js = (ROOT / "admin/admin.js").read_text(encoding="utf-8")
+if 'name="robots" content="noindex,nofollow,noarchive"' not in admin_login:
+    fail("admin/index.html: noindex protection marker missing")
+if "Username and password are required." not in admin_login:
+    fail("admin/index.html: username/password login contract missing")
+if "sunshine-admin-auth" not in admin_js:
+    fail("admin/admin.js: secure auth endpoint missing")
+if "sessionStorage" not in admin_js:
+    fail("admin/admin.js: session-only auth storage missing")
+if "service_role" in admin_js.lower() or "password_hash" in admin_js.lower():
+    fail("admin/admin.js: server-side secret leaked to public client")
 
 site_js = (ROOT / "assets/js/site.js").read_text(encoding="utf-8")
 for token in [
