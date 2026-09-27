@@ -6,7 +6,7 @@
 <link rel="icon" href="../assets/sunshine-logo.webp" type="image/webp">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=cms1">
+<link rel="stylesheet" href="admin.css?v=control2">
 </head><body class="admin-dashboard">
 <div class="admin-shell">
 <header class="admin-topbar">
@@ -98,6 +98,66 @@
   <p class="form-status" id="status_seo"></p>
 </section>
 
+
+<section class="admin-card full cms-panel">
+  <div class="cms-head"><div><h2>Home Advertisements</h2><p>Controls the left and right advertising areas shown in the wide-screen gutters of the Home page.</p></div><button class="primary-btn" type="button" data-save="ads">Save Advertisements</button></div>
+  <div class="ad-admin-grid">
+    <article class="ad-admin-card">
+      <h3>Left Advertisement</h3>
+      <div class="cms-form-grid one">
+        <label class="toggle-line"><input id="ads_homeLeft_enabled" type="checkbox"> Enabled</label>
+        <label>Media type<select id="ads_homeLeft_type"><option value="video">Video</option><option value="image">Image</option></select></label>
+        <label>Media URL<input id="ads_homeLeft_mediaUrl" type="url" placeholder="https://.../advert.mp4"></label>
+        <label>Click URL<input id="ads_homeLeft_clickUrl" type="url" placeholder="https://company.example"></label>
+        <label>Label<input id="ads_homeLeft_label" placeholder="Advertisement"></label>
+        <label class="toggle-line"><input id="ads_homeLeft_autoplay" type="checkbox"> Video autoplay</label>
+        <label class="toggle-line"><input id="ads_homeLeft_muted" type="checkbox"> Video muted</label>
+        <label class="toggle-line"><input id="ads_homeLeft_loop" type="checkbox"> Video loop</label>
+      </div>
+    </article>
+    <article class="ad-admin-card">
+      <h3>Right Advertisement</h3>
+      <div class="cms-form-grid one">
+        <label class="toggle-line"><input id="ads_homeRight_enabled" type="checkbox"> Enabled</label>
+        <label>Media type<select id="ads_homeRight_type"><option value="video">Video</option><option value="image">Image</option></select></label>
+        <label>Media URL<input id="ads_homeRight_mediaUrl" type="url" placeholder="https://.../advert.mp4"></label>
+        <label>Click URL<input id="ads_homeRight_clickUrl" type="url" placeholder="https://company.example"></label>
+        <label>Label<input id="ads_homeRight_label" placeholder="Advertisement"></label>
+        <label class="toggle-line"><input id="ads_homeRight_autoplay" type="checkbox"> Video autoplay</label>
+        <label class="toggle-line"><input id="ads_homeRight_muted" type="checkbox"> Video muted</label>
+        <label class="toggle-line"><input id="ads_homeRight_loop" type="checkbox"> Video loop</label>
+      </div>
+    </article>
+  </div>
+  <p class="form-status" id="status_ads"></p>
+</section>
+
+<section class="admin-card wide cms-panel">
+  <div class="cms-head"><div><h2>Live Radio Page</h2><p>Controls the public Live Radio heading, station labels and fallback Now Playing text.</p></div><button class="primary-btn" type="button" data-save="live">Save Live Radio</button></div>
+  <div class="cms-form-grid">
+    <label>Page title<input id="live_heroTitle"></label>
+    <label>Page subtitle<input id="live_heroSubtitle"></label>
+    <label>Station label<input id="live_stationLabel"></label>
+    <label>Stream label<input id="live_streamLabel"></label>
+    <label>Fallback track title<input id="live_fallbackTrackTitle"></label>
+    <label>Fallback artist/status<input id="live_fallbackTrackArtist"></label>
+    <label class="toggle-line"><input id="live_playerEnabled" type="checkbox"> Live player enabled</label>
+  </div>
+  <p class="form-status" id="status_live"></p>
+</section>
+
+<section class="admin-card cms-panel">
+  <div class="cms-head"><div><h2>Live Chat</h2><p>The chat is placed on the Live Radio page, not on Home.</p></div><button class="primary-btn" type="button" data-save="chat">Save Chat</button></div>
+  <div class="cms-form-grid one">
+    <label class="toggle-line"><input id="chat_enabled" type="checkbox"> Chat enabled</label>
+    <label>Title<input id="chat_title"></label>
+    <label>Subtitle<input id="chat_subtitle"></label>
+    <label>Status label<input id="chat_statusLabel"></label>
+    <label>Message placeholder<input id="chat_placeholder"></label>
+  </div>
+  <p class="form-status" id="status_chat"></p>
+</section>
+
 <section class="admin-card full"><h2>Change Password</h2>
 <form class="change-password" id="passwordForm">
 <input id="currentPassword" type="password" autocomplete="current-password" placeholder="Current password" required>
@@ -106,5 +166,5 @@
 </form><p id="passwordStatus" class="form-status" aria-live="polite"></p>
 </section>
 </div></main></div>
-<script src="admin.js?v=cms1"></script>
+<script src="admin.js?v=control2"></script>
 </body></html>
