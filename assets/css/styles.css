@@ -3890,3 +3890,56 @@ main,
     padding-right: 5px;
   }
 }
+
+
+/* ===== CHAT EMOJI PICKER ===== */
+.chat-compose {
+  position: relative;
+}
+
+.emoji-button {
+  cursor: pointer;
+}
+
+.emoji-picker {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 9px);
+  z-index: 30;
+  width: 286px;
+  max-width: min(286px, calc(100vw - 32px));
+  display: none;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 190, 31, .46);
+  background: rgba(7, 16, 27, .98);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, .48), 0 0 24px rgba(255, 177, 0, .12);
+}
+
+.emoji-picker.is-open {
+  display: grid;
+}
+
+.emoji-choice {
+  width: 33px;
+  height: 33px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.emoji-choice:hover,
+.emoji-choice:focus-visible {
+  border-color: rgba(255, 199, 64, .55);
+  background: rgba(255, 190, 31, .10);
+  outline: none;
+  transform: translateY(-1px);
+}
