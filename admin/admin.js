@@ -1,6 +1,7 @@
 const ADMIN_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-admin-auth";
 const LIFESTYLE_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-lifestyle-api";
 const LIFESTYLE_REFRESH_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-lifestyle-refresh";
+const CHAT_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-chat-api";
 const SESSION_KEY = "sunshine_admin_session_v1";
 
 async function lifestyleApi(action, payload = {}, token = "") {
@@ -24,6 +25,21 @@ async function refreshLifestyle(payload = {}) {
   });
   const data = await response.json().catch(()=>({}));
   if(!response.ok) throw new Error(data.error || "LIFESTYLE_REFRESH_FAILED");
+  return data;
+}
+
+async function chatAdminApi(action, payload = {}) {
+  const response = await fetch(CHAT_API, {
+    method: "POST",
+    headers: {
+      "Content-Type":"application/json",
+      Authorization:`Bearer ${getSessionToken()}`
+    },
+    body: JSON.stringify({action, ...payload}),
+    cache: "no-store"
+  });
+  const data = await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(data.error || "CHAT_ADMIN_REQUEST_FAILED");
   return data;
 }
 
@@ -482,6 +498,111 @@ function initLifestyleAdmin(){
   });
 }
 
+
+let CHAT_ADMIN={users:[],messages:[]};
+
+function chatAdminDate(value){
+  if(!value) return "—";
+  try{return new Date(value).toLocaleString()}catch{return String(value)}
+}
+
+function renderChatUsersAdmin(){
+  const root=document.getElementById("chatUsersAdmin");
+  if(!root) return;
+  if(!CHAT_ADMIN.users.length){
+    root.innerHTML='<div class="lock-note">No chat users yet.</div>';
+    return;
+  }
+  root.innerHTML=CHAT_ADMIN.users.map(user=>`
+    <div class="chat-user-admin-row" data-chat-user-id="${user.id}">
+      <div class="chat-admin-main">
+        <strong>${esc(user.username||"")}</strong>
+        <small>Last seen: ${esc(chatAdminDate(user.last_seen_at))}</small>
+        ${user.banned?`<span class="chat-state banned">BANNED</span>`:user.blocked?`<span class="chat-state blocked">BLOCKED</span>`:`<span class="chat-state active">ACTIVE</span>`}
+      </div>
+      <div class="chat-admin-actions">
+        <button class="ghost-btn" type="button" data-chat-block>${user.blocked?"Unblock":"Block"}</button>
+        <button class="row-remove" type="button" data-chat-ban>${user.banned?"Unban":"Ban"}</button>
+        <button class="ghost-btn" type="button" data-chat-release>Release Username</button>
+      </div>
+    </div>`).join("");
+}
+
+function renderChatMessagesAdmin(){
+  const root=document.getElementById("chatMessagesAdmin");
+  if(!root) return;
+  if(!CHAT_ADMIN.messages.length){
+    root.innerHTML='<div class="lock-note">No chat messages yet.</div>';
+    return;
+  }
+  root.innerHTML=CHAT_ADMIN.messages.map(message=>`
+    <div class="chat-message-admin-row${message.deleted_at?" deleted":""}" data-chat-message-id="${message.id}">
+      <div class="chat-admin-main">
+        <strong>${esc(message.username_snapshot||"")}</strong>
+        <p>${esc(message.body||"")}</p>
+        <small>${esc(chatAdminDate(message.created_at))}${message.deleted_at?" · Deleted":""}</small>
+      </div>
+      <div class="chat-admin-actions">
+        ${message.deleted_at?"":'<button class="row-remove" type="button" data-chat-delete>Delete</button>'}
+      </div>
+    </div>`).join("");
+}
+
+async function loadChatModeration(){
+  const data=await chatAdminApi("adminList");
+  CHAT_ADMIN.users=data.users||[];
+  CHAT_ADMIN.messages=data.messages||[];
+  renderChatUsersAdmin();
+  renderChatMessagesAdmin();
+}
+
+function initChatModeration(){
+  const root=document.getElementById("chatModerationPanel");
+  if(!root) return;
+  const status=document.getElementById("chatModerationStatus");
+
+  document.getElementById("reloadChatModeration")?.addEventListener("click",async()=>{
+    setStatus(status,"Loading chat…");
+    try{await loadChatModeration();setStatus(status,"Chat moderation refreshed.","ok")}
+    catch(error){setStatus(status,friendlyError(error),"error")}
+  });
+
+  document.getElementById("chatUsersAdmin")?.addEventListener("click",async event=>{
+    const row=event.target.closest("[data-chat-user-id]");
+    if(!row) return;
+    const user=CHAT_ADMIN.users.find(x=>x.id===row.dataset.chatUserId);
+    if(!user) return;
+
+    try{
+      if(event.target.closest("[data-chat-block]")){
+        const blocked=!user.blocked;
+        await chatAdminApi("adminUserStatus",{id:user.id,blocked,banned:user.banned,reason:blocked?"Blocked by administrator":""});
+        setStatus(status,blocked?"User blocked.":"User unblocked.","ok");
+      }else if(event.target.closest("[data-chat-ban]")){
+        const banned=!user.banned;
+        await chatAdminApi("adminUserStatus",{id:user.id,blocked:user.blocked,banned,reason:banned?"Banned by administrator":""});
+        setStatus(status,banned?"User banned.":"User unbanned.","ok");
+      }else if(event.target.closest("[data-chat-release]")){
+        if(!confirm("Release this username? The current device will lose ownership and somebody else may claim it.")) return;
+        await chatAdminApi("adminReleaseUsername",{id:user.id});
+        setStatus(status,"Username released.","ok");
+      }else return;
+      await loadChatModeration();
+    }catch(error){setStatus(status,friendlyError(error),"error")}
+  });
+
+  document.getElementById("chatMessagesAdmin")?.addEventListener("click",async event=>{
+    const row=event.target.closest("[data-chat-message-id]");
+    if(!row||!event.target.closest("[data-chat-delete]")) return;
+    if(!confirm("Delete this public chat message?")) return;
+    try{
+      await chatAdminApi("adminDeleteMessage",{id:row.dataset.chatMessageId,reason:"Deleted by administrator"});
+      setStatus(status,"Message deleted.","ok");
+      await loadChatModeration();
+    }catch(error){setStatus(status,friendlyError(error),"error")}
+  });
+}
+
 async function initDashboard() {
   if (!document.body.classList.contains("admin-dashboard")) return;
   const session = await guardDashboard();
@@ -490,8 +611,10 @@ async function initDashboard() {
   document.getElementById("adminUsername").textContent = session.username;
   initCmsControls();
   initLifestyleAdmin();
+  initChatModeration();
   try { await loadCms(); } catch (error) { console.error(error); }
   try { await loadLifestyleAdmin(); } catch (error) { console.error(error); }
+  try { await loadChatModeration(); } catch (error) { console.error(error); }
   document.getElementById("sessionExpiry").textContent =
     new Date(session.expiresAt).toLocaleString();
 
