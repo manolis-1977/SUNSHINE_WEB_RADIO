@@ -201,7 +201,7 @@ function renderFeatures() {
   const root=document.getElementById("featuresEditor"); if(!root) return;
   const labels={
     homeSchedule:"Home: Schedule",homeDjs:"Home: DJs",homeChat:"Home: Chat",listenEverywhere:"Home: Listen Everywhere",
-    showsPage:"Shows page",schedulePage:"Schedule page",djsPage:"DJs page",chatPage:"Chat page",contactPage:"Contact page",maintenanceMode:"Maintenance mode"
+    showsPage:"Shows page",schedulePage:"Schedule page",djsPage:"DJs page",lifestylePage:"Life Style page",chatPage:"Chat page",contactPage:"Contact page",maintenanceMode:"Maintenance mode"
   };
   root.innerHTML=Object.entries(labels).map(([k,label])=>`<label class="feature-toggle"><input type="checkbox" data-feature="${k}" ${CMS.features?.[k]?"checked":""}> ${label}</label>`).join("");
 }
