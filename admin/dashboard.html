@@ -6,7 +6,7 @@
 <link rel="icon" href="../assets/sunshine-logo.webp" type="image/webp">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=1">
+<link rel="stylesheet" href="admin.css?v=cms1">
 </head><body class="admin-dashboard">
 <div class="admin-shell">
 <header class="admin-topbar">
@@ -26,7 +26,78 @@
 <dt>Automation</dt><dd>Jazler RadioStar 2.2.30</dd>
 <dt>Admin backend</dt><dd>Supabase secure Edge Function</dd>
 </dl></section>
-<section class="admin-card"><h2>Management Areas</h2><p>Schedule, Shows, DJs, Contact, Social links and Now Playing controls will be connected here as the next admin modules.</p><div class="lock-note">No admin secrets are stored in the public website repository.</div></section>
+<section class="admin-card"><h2>Content Control</h2><p>Changes saved here are published from the secure CMS backend and read by the public website.</p><div class="lock-note">No admin secrets are stored in the public website repository.</div></section>
+
+<section class="admin-card full cms-panel">
+  <div class="cms-head"><div><h2>Station / Home</h2><p>Main public branding and hero text.</p></div><button class="primary-btn" type="button" data-save="site">Save Station</button></div>
+  <div class="cms-form-grid">
+    <label>Station name<input id="site_stationName"></label>
+    <label>Tagline<input id="site_tagline"></label>
+    <label>Hero title<input id="site_heroTitle"></label>
+    <label>Hero accent<input id="site_heroAccent"></label>
+    <label>Hero subtitle<input id="site_subtitle"></label>
+    <label>Stream label<input id="site_streamLabel"></label>
+  </div>
+  <p class="form-status" id="status_site"></p>
+</section>
+
+<section class="admin-card full cms-panel">
+  <div class="cms-head"><div><h2>Schedule</h2><p>Add, remove, reorder and edit daily programme rows.</p></div><div class="admin-actions"><button class="ghost-btn" id="addSchedule" type="button">+ Add Row</button><button class="primary-btn" type="button" data-save="schedule">Save Schedule</button></div></div>
+  <div id="scheduleEditor" class="list-editor"></div>
+  <p class="form-status" id="status_schedule"></p>
+</section>
+
+<section class="admin-card full cms-panel">
+  <div class="cms-head"><div><h2>Shows</h2><p>Control the public Shows page.</p></div><div class="admin-actions"><button class="ghost-btn" id="addShow" type="button">+ Add Show</button><button class="primary-btn" type="button" data-save="shows">Save Shows</button></div></div>
+  <div id="showsEditor" class="list-editor"></div>
+  <p class="form-status" id="status_shows"></p>
+</section>
+
+<section class="admin-card full cms-panel">
+  <div class="cms-head"><div><h2>DJs / Presenters</h2><p>Edit presenter name, show, time, image and visibility.</p></div><div class="admin-actions"><button class="ghost-btn" id="addDj" type="button">+ Add DJ</button><button class="primary-btn" type="button" data-save="djs">Save DJs</button></div></div>
+  <div id="djsEditor" class="list-editor"></div>
+  <p class="form-status" id="status_djs"></p>
+</section>
+
+<section class="admin-card wide cms-panel">
+  <div class="cms-head"><div><h2>Contact</h2><p>Public station contact details.</p></div><button class="primary-btn" type="button" data-save="contact">Save Contact</button></div>
+  <div class="cms-form-grid">
+    <label>Email<input id="contact_email" type="email"></label>
+    <label>Phone<input id="contact_phone"></label>
+    <label>Location<input id="contact_location"></label>
+    <label class="toggle-line"><input id="contact_publicContactEnabled" type="checkbox"> Show public contact details</label>
+    <label class="toggle-line"><input id="contact_formEnabled" type="checkbox"> Enable contact form</label>
+  </div>
+  <p class="form-status" id="status_contact"></p>
+</section>
+
+<section class="admin-card cms-panel">
+  <div class="cms-head"><div><h2>Social Links</h2></div><button class="primary-btn" type="button" data-save="social">Save Social</button></div>
+  <div class="cms-form-grid one">
+    <label>Facebook<input id="social_facebook" type="url"></label>
+    <label>Instagram<input id="social_instagram" type="url"></label>
+    <label>TikTok<input id="social_tiktok" type="url"></label>
+    <label>YouTube<input id="social_youtube" type="url"></label>
+  </div>
+  <p class="form-status" id="status_social"></p>
+</section>
+
+<section class="admin-card wide cms-panel">
+  <div class="cms-head"><div><h2>Site Sections</h2><p>Turn public sections/pages on or off.</p></div><button class="primary-btn" type="button" data-save="features">Save Visibility</button></div>
+  <div id="featuresEditor" class="toggle-grid"></div>
+  <p class="form-status" id="status_features"></p>
+</section>
+
+<section class="admin-card cms-panel">
+  <div class="cms-head"><div><h2>SEO</h2></div><button class="primary-btn" type="button" data-save="seo">Save SEO</button></div>
+  <div class="cms-form-grid one">
+    <label>Site title<input id="seo_siteTitle"></label>
+    <label>Description<textarea id="seo_description" rows="4"></textarea></label>
+    <label>Share image<input id="seo_shareImage"></label>
+  </div>
+  <p class="form-status" id="status_seo"></p>
+</section>
+
 <section class="admin-card full"><h2>Change Password</h2>
 <form class="change-password" id="passwordForm">
 <input id="currentPassword" type="password" autocomplete="current-password" placeholder="Current password" required>
@@ -35,5 +106,5 @@
 </form><p id="passwordStatus" class="form-status" aria-live="polite"></p>
 </section>
 </div></main></div>
-<script src="admin.js?v=1"></script>
+<script src="admin.js?v=cms1"></script>
 </body></html>
