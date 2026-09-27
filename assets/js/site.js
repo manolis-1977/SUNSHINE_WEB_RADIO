@@ -20,6 +20,7 @@ const SUNSHINE_INITIAL_MESSAGES = []
 const CHAT_STORAGE_KEY = "sunshine_chat_preview_v1";
 const CONTACT_STORAGE_KEY = "sunshine_contact_draft_v1";
 const SUNSHINE_CMS_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-admin-auth";
+const SUNSHINE_PLAYBACK_MODE_KEY = "sunshine_playback_mode_v1";
 let SUNSHINE_SHOWS = [];
 let SUNSHINE_PUBLIC_CONTENT = {};
 const SUNSHINE_RADIO_CONFIG = window.SUNSHINE_RADIO_CONFIG || { streamUrl: "", metadataUrl: "" };
@@ -459,6 +460,127 @@ function setupEmojiButtons() {
   });
 }
 
+function getPlaybackMode() {
+  const configured = SUNSHINE_PUBLIC_CONTENT.live?.defaultPlaybackMode === "auto" ? "auto" : "manual";
+  try {
+    const saved = localStorage.getItem(SUNSHINE_PLAYBACK_MODE_KEY);
+    if (saved === "auto" || saved === "manual") return saved;
+  } catch {}
+  return configured;
+}
+
+function updatePlaybackModeUi(mode, message = "") {
+  document.querySelectorAll("[data-playback-mode]").forEach(button => {
+    const active = button.dataset.playbackMode === mode;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  document.querySelectorAll("[data-playback-status]").forEach(status => {
+    status.textContent = message || (mode === "auto"
+      ? "AUTO: playback will be attempted automatically."
+      : "MANUAL: press PLAY in the stream player.");
+  });
+}
+
+function findPlayableControl(root) {
+  if (!root) return null;
+  const media = root.querySelector?.("audio, video");
+  if (media) return { type: "media", node: media };
+
+  const candidates = [...(root.querySelectorAll?.("button, [role='button'], input[type='button'], input[type='submit']") || [])];
+  const button = candidates.find(node => {
+    const text = [
+      node.textContent,
+      node.getAttribute?.("aria-label"),
+      node.getAttribute?.("title"),
+      node.getAttribute?.("value")
+    ].filter(Boolean).join(" ").toLowerCase();
+    return /(^|\s)(play|listen|start)(\s|$)/.test(text) || text.includes("play");
+  });
+  return button ? { type: "button", node: button } : null;
+}
+
+async function tryStartCasterPlayback({ userInitiated = false } = {}) {
+  const widget = document.getElementById("casterLivePlayer");
+  if (!widget) return false;
+
+  const attempt = async root => {
+    const control = findPlayableControl(root);
+    if (!control) return false;
+    try {
+      if (control.type === "media") {
+        control.node.muted = false;
+        await control.node.play();
+      } else {
+        control.node.click();
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  if (await attempt(widget)) return true;
+
+  for (const frame of widget.querySelectorAll("iframe")) {
+    try {
+      const doc = frame.contentDocument || frame.contentWindow?.document;
+      if (doc && await attempt(doc)) return true;
+    } catch {}
+  }
+
+  if (userInitiated) {
+    const frame = widget.querySelector("iframe");
+    if (frame) {
+      try { frame.focus(); } catch {}
+    }
+  }
+  return false;
+}
+
+async function applyPlaybackMode(mode, { persist = false, userInitiated = false } = {}) {
+  const normalized = mode === "auto" ? "auto" : "manual";
+  if (persist) {
+    try { localStorage.setItem(SUNSHINE_PLAYBACK_MODE_KEY, normalized); } catch {}
+  }
+
+  if (normalized === "manual") {
+    updatePlaybackModeUi("manual");
+    return;
+  }
+
+  updatePlaybackModeUi("auto", "AUTO: trying to start the live stream…");
+  const started = await tryStartCasterPlayback({ userInitiated });
+  updatePlaybackModeUi("auto", started
+    ? "AUTO: live stream start requested."
+    : "AUTO is enabled. If your browser blocks sound autoplay, press PLAY once.");
+}
+
+function setupPlaybackMode() {
+  const initialMode = getPlaybackMode();
+  updatePlaybackModeUi(initialMode);
+
+  document.querySelectorAll("[data-playback-mode]").forEach(button => {
+    button.addEventListener("click", () => {
+      applyPlaybackMode(button.dataset.playbackMode, { persist: true, userInitiated: true });
+    });
+  });
+
+  if (initialMode === "auto") {
+    let tries = 0;
+    const timer = window.setInterval(async () => {
+      tries += 1;
+      const started = await tryStartCasterPlayback();
+      if (started || tries >= 8) {
+        window.clearInterval(timer);
+        updatePlaybackModeUi("auto", started
+          ? "AUTO: live stream start requested."
+          : "AUTO is enabled. If your browser blocks sound autoplay, press PLAY once.");
+      }
+    }, 750);
+  }
+}
+
 function setupLiveActions() {
   const widget = document.getElementById("casterLivePlayer");
 
@@ -468,7 +590,12 @@ function setupLiveActions() {
 
       if (widget) {
         widget.scrollIntoView({ behavior: "smooth", block: "center" });
-        showToast("SunShine is live — press PLAY in the radio player.");
+        if (getPlaybackMode() === "auto") {
+          applyPlaybackMode("auto", { userInitiated: true });
+          showToast("SunShine AUTO play selected.");
+        } else {
+          showToast("SunShine is live — press PLAY in the radio player.");
+        }
         return;
       }
 
@@ -563,6 +690,7 @@ async function bootstrapSunShine() {
   await loadPublicContent();
   setupMenu();
   setupLiveActions();
+  setupPlaybackMode();
   setupPlaceholderLinks();
   setupEmojiButtons();
   setupContactDraft();
