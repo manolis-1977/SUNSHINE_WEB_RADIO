@@ -1,28 +1,35 @@
 # SunShine Web Radio
 
-Official source repository for the **SunShine Web Radio** website.
+Official source repository for **SunShine Web Radio**.
 
-## Current phase
-Phase 1 — Website foundation
+## Current status
+Pre-launch production pass.
 
-The first implementation focuses on the public website and UI. Jazzler/stream integration will be connected only after the website foundation is stable.
+The public site now includes:
+- Home
+- Live Radio
+- Shows
+- Schedule
+- DJs
+- Chat
+- Contact
+- Privacy Policy
+- Terms of Use
+- 404 page
+- robots.txt + sitemap.xml
+- installable web manifest
+- Caster.fm live player integration
+- responsive/mobile navigation
+- automated GitHub Pages validation and deployment
 
-## Locked homepage structure
-- Header / navigation
-- Hero + Listen Live player shell
-- Today's Schedule
-- DJs & Live Shows
-- SunShine Chat
-- Listen Everywhere
-- Footer
+## Live broadcast path
+Jazler RadioStar → Stereo Mix → BUTT → Caster.fm → SunShine website.
 
-The **Explore Our Music** section is intentionally excluded for now.
-
-## Technology
-- HTML5
-- CSS3
-- Vanilla JavaScript
-- No framework dependency in the initial baseline
+## Metadata
+Real Jazler export files have been verified separately. The next integration step is publishing normalized Now Playing metadata to the public site.
 
 ## Source of truth
-This GitHub repository is the canonical project source.
+This GitHub repository is the canonical source for the website.
+
+## Pre-launch content lock still required
+Before public promotion, replace or confirm any provisional programme/DJ content and configure the final public contact/social links.
