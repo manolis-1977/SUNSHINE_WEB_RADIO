@@ -92,6 +92,35 @@ for extra in PRELAUNCH_FILES:
     if not (ROOT / extra).exists():
         fail(f"Missing pre-launch file: {extra}")
 
+logo_path = ROOT / "assets/sunshine-logo-transparent.png"
+if not logo_path.exists():
+    fail("Missing canonical transparent PNG logo")
+
+logo_bytes = logo_path.read_bytes()
+if not logo_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+    fail("Canonical logo is not a valid PNG file")
+
+if len(logo_bytes) < 9000:
+    fail("Canonical transparent logo looks truncated or over-compressed")
+
+if len(logo_bytes) < 33 or logo_bytes[12:16] != b"IHDR":
+    fail("Canonical PNG is missing IHDR")
+
+width = int.from_bytes(logo_bytes[16:20], "big")
+height = int.from_bytes(logo_bytes[20:24], "big")
+color_type = logo_bytes[25]
+
+if width < 200 or height < 200:
+    fail(f"Canonical logo resolution is too small: {width}x{height}")
+
+has_alpha = color_type in {4, 6} or b"tRNS" in logo_bytes
+if not has_alpha:
+    fail("Canonical PNG has no transparency channel")
+
+for legacy_logo in ("sunshine-logo.webp", "sunshine-logo.png"):
+    if (ROOT / "assets" / legacy_logo).exists():
+        fail(f"Legacy logo must not remain: assets/{legacy_logo}")
+
 for page_name in PAGES:
     page = ROOT / page_name
     if not page.exists():
@@ -104,14 +133,12 @@ for page_name in PAGES:
     if 'class="sunshine-page' not in text:
         fail(f"{page_name}: missing shared sunshine-page class")
 
+    expected_css = "assets/css/styles.css?v=transparent-logo1"
     if page_name == "index.html":
-        expected_css = "assets/css/styles.css?v=control1"
         expected_js = "assets/js/site.js?v=control1"
     elif page_name == "live-radio.html":
-        expected_css = "assets/css/styles.css?v=control2"
         expected_js = "assets/js/site.js?v=control2"
     else:
-        expected_css = "assets/css/styles.css?v=phase3a"
         expected_js = "assets/js/site.js?v=cms1"
 
     if expected_css not in text:
@@ -191,6 +218,7 @@ for marker in [
     "PHASE 3B: CASTER.FM LIVE STREAM PLAYER",
     "PRE-LAUNCH COMPLETION PASS",
     "PHASE 4: ADMIN-CONTROLLED ADS + LIVE CHAT RELOCATION",
+    "TRANSPARENT PNG LOGO LOCK",
 ]:
     if marker not in css:
         fail(f"assets/css/styles.css: missing marker '{marker}'")
