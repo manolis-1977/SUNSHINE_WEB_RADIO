@@ -1,4 +1,4 @@
-const SUNSHINE_SCHEDULE = [
+let SUNSHINE_SCHEDULE = [
   { start: "10:00", end: "12:00", time: "10:00 - 12:00", show: "Morning Sunshine", host: "with Alex K.", dj: "Alex K." },
   { start: "12:00", end: "14:00", time: "12:00 - 14:00", show: "SunShine Hits", host: "with Maria S.", dj: "Maria S." },
   { start: "14:00", end: "16:00", time: "14:00 - 16:00", show: "Greek Vibes", host: "with Nikos P.", dj: "Nikos P." },
@@ -8,7 +8,7 @@ const SUNSHINE_SCHEDULE = [
   { start: "22:00", end: "00:00", time: "22:00 - 00:00", show: "Night Sessions", host: "with DJ Alex", dj: "DJ Alex" }
 ];
 
-const SUNSHINE_DJS = [
+let SUNSHINE_DJS = [
   { initials: "AK", name: "Alex K.", show: "Morning Sunshine", time: "10:00 - 12:00", start: "10:00", end: "12:00" },
   { initials: "MS", name: "Maria S.", show: "SunShine Hits", time: "12:00 - 14:00", start: "12:00", end: "14:00" },
   { initials: "NP", name: "Nikos P.", show: "Greek Vibes", time: "14:00 - 16:00", start: "14:00", end: "16:00" },
@@ -19,6 +19,9 @@ const SUNSHINE_INITIAL_MESSAGES = []
 
 const CHAT_STORAGE_KEY = "sunshine_chat_preview_v1";
 const CONTACT_STORAGE_KEY = "sunshine_contact_draft_v1";
+const SUNSHINE_CMS_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-admin-auth";
+let SUNSHINE_SHOWS = [];
+let SUNSHINE_PUBLIC_CONTENT = {};
 const SUNSHINE_RADIO_CONFIG = window.SUNSHINE_RADIO_CONFIG || { streamUrl: "", metadataUrl: "" };
 
 const menuToggle = document.getElementById("menuToggle");
@@ -40,6 +43,141 @@ function showToast(message) {
   toast.classList.add("show");
   window.clearTimeout(showToast.timer);
   showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 3300);
+}
+
+
+async function loadPublicContent() {
+  try {
+    const response = await fetch(SUNSHINE_CMS_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "publicContent" }),
+      cache: "no-store"
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    SUNSHINE_PUBLIC_CONTENT = data.content || {};
+
+    if (Array.isArray(SUNSHINE_PUBLIC_CONTENT.schedule)) {
+      SUNSHINE_SCHEDULE = SUNSHINE_PUBLIC_CONTENT.schedule
+        .filter(item => item.active !== false)
+        .sort((a,b)=>(a.order||0)-(b.order||0))
+        .map(item => ({
+          ...item,
+          time: item.time || `${item.start || ""} - ${item.end || ""}`,
+          host: item.host ? `with ${item.host}` : ""
+        }));
+    }
+
+    if (Array.isArray(SUNSHINE_PUBLIC_CONTENT.djs)) {
+      SUNSHINE_DJS = SUNSHINE_PUBLIC_CONTENT.djs
+        .filter(item => item.active !== false)
+        .sort((a,b)=>(a.order||0)-(b.order||0))
+        .map(item => {
+          const [start="", end=""] = String(item.time || "").split("-").map(v=>v.trim());
+          return { ...item, start, end };
+        });
+    }
+
+    if (Array.isArray(SUNSHINE_PUBLIC_CONTENT.shows)) {
+      SUNSHINE_SHOWS = SUNSHINE_PUBLIC_CONTENT.shows
+        .filter(item => item.active !== false)
+        .sort((a,b)=>(a.order||0)-(b.order||0));
+    }
+
+    applyPublicContent();
+  } catch (error) {
+    console.warn("SunShine CMS unavailable; using static fallback.", error);
+  }
+}
+
+function setText(selector, value) {
+  if (value == null || value === "") return;
+  document.querySelectorAll(selector).forEach(el => { el.textContent = value; });
+}
+
+function applyPublicContent() {
+  const site = SUNSHINE_PUBLIC_CONTENT.site || {};
+  if (document.body.classList.contains("page-home")) {
+    const hero = document.querySelector(".hero-brand h1");
+    if (hero && (site.heroTitle || site.heroAccent)) {
+      hero.innerHTML = `${escapeHtml(site.heroTitle || "Feel the Music.")} <span>${escapeHtml(site.heroAccent || "Feel the Light.")}</span>`;
+    }
+    setText(".hero-brand > p", site.subtitle);
+  }
+  setText(".station-label strong", site.stationName);
+  setText(".station-label span", site.streamLabel);
+  setText(".footer-brand strong", site.stationName);
+  setText(".footer-brand p", site.tagline);
+
+  const social = SUNSHINE_PUBLIC_CONTENT.social || {};
+  const socialMap = { Facebook: social.facebook, Instagram: social.instagram, TikTok: social.tiktok, YouTube: social.youtube };
+  document.querySelectorAll(".social-row a").forEach(link => {
+    const url = socialMap[link.getAttribute("aria-label")];
+    if (url) {
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.removeAttribute("data-placeholder-link");
+    } else {
+      link.href = "#";
+    }
+  });
+
+  const contact = SUNSHINE_PUBLIC_CONTENT.contact || {};
+  const emailEl = document.getElementById("publicContactEmail");
+  const phoneEl = document.getElementById("publicContactPhone");
+  const locationEl = document.getElementById("publicContactLocation");
+  if (emailEl) emailEl.textContent = contact.email || "Not published yet";
+  if (phoneEl) phoneEl.textContent = contact.phone || "Not published yet";
+  if (locationEl) locationEl.textContent = contact.location || "Not published yet";
+
+  const features = SUNSHINE_PUBLIC_CONTENT.features || {};
+  const visibility = [
+    ["#schedule", features.homeSchedule],
+    ["#djs", features.homeDjs],
+    ["#chat", features.homeChat],
+    [".listen-everywhere", features.listenEverywhere]
+  ];
+  visibility.forEach(([selector, enabled]) => {
+    if (enabled === false) document.querySelectorAll(selector).forEach(el => el.hidden = true);
+  });
+
+  const navFeatureMap = {
+    "shows.html": "showsPage",
+    "schedule.html": "schedulePage",
+    "djs.html": "djsPage",
+    "chat.html": "chatPage",
+    "contact.html": "contactPage"
+  };
+  document.querySelectorAll('a[href]').forEach(link => {
+    const key = navFeatureMap[link.getAttribute("href")];
+    if (key && features[key] === false) link.hidden = true;
+  });
+
+  if (features.maintenanceMode) {
+    const main = document.querySelector("main");
+    if (main) {
+      main.innerHTML = `<section class="subpage-main"><div class="container subpage-panel legal-copy"><h1>SunShine <span>Maintenance</span></h1><p>${escapeHtml(features.maintenanceMessage || "SunShine Web Radio is currently being updated.")}</p></div></section>`;
+    }
+  }
+
+  const seo = SUNSHINE_PUBLIC_CONTENT.seo || {};
+  if (seo.siteTitle && document.body.classList.contains("page-home")) document.title = seo.siteTitle;
+  const desc = document.querySelector('meta[name="description"]');
+  if (desc && seo.description) desc.content = seo.description;
+}
+
+function renderShows() {
+  const root = document.getElementById("showsGrid");
+  if (!root || !SUNSHINE_SHOWS.length) return;
+  root.innerHTML = SUNSHINE_SHOWS.map(item => `
+    <article class="content-card">
+      <strong>${escapeHtml(item.time || "")}</strong>
+      <h3>${escapeHtml(item.name || "")}</h3>
+      <p>${escapeHtml(item.description || "")}</p>
+      <a class="card-link" href="schedule.html">View schedule →</a>
+    </article>`).join("");
 }
 
 function timeToMinutes(value) {
@@ -333,13 +471,18 @@ function setYear() {
   });
 }
 
-setupMenu();
-setupLiveActions();
-setupPlaceholderLinks();
-setupEmojiButtons();
-setupContactDraft();
-renderSchedules();
-renderDjs();
-setupChat("chatFeed", "chatForm", "chatInput");
-setupChat("chatFeedPage", "chatFormPage", "chatInputPage");
-setYear();
+async function bootstrapSunShine() {
+  await loadPublicContent();
+  setupMenu();
+  setupLiveActions();
+  setupPlaceholderLinks();
+  setupEmojiButtons();
+  setupContactDraft();
+  renderSchedules();
+  renderDjs();
+  renderShows();
+  setupChat("chatFeed", "chatForm", "chatInput");
+  setupChat("chatFeedPage", "chatFormPage", "chatInputPage");
+  setYear();
+}
+bootstrapSunShine();
