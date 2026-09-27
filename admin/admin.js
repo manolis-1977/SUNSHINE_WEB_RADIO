@@ -206,6 +206,19 @@ function populateCms() {
   ["facebook","instagram","tiktok","youtube"].forEach(k=>setInput("social_"+k,social[k]));
   const seo=CMS.seo||{};
   ["siteTitle","description","shareImage"].forEach(k=>setInput("seo_"+k,seo[k]));
+
+  const ads=CMS.ads||{};
+  ["homeLeft","homeRight"].forEach(slot=>{
+    const cfg=ads[slot]||{};
+    ["enabled","type","mediaUrl","clickUrl","label","autoplay","muted","loop"].forEach(k=>setInput("ads_"+slot+"_"+k,cfg[k]));
+  });
+
+  const live=CMS.live||{};
+  ["heroTitle","heroSubtitle","stationLabel","streamLabel","fallbackTrackTitle","fallbackTrackArtist","playerEnabled"].forEach(k=>setInput("live_"+k,live[k]));
+
+  const chat=CMS.chat||{};
+  ["enabled","title","subtitle","statusLabel","placeholder"].forEach(k=>setInput("chat_"+k,chat[k]));
+
   renderScheduleEditor(); renderShowsEditor(); renderDjsEditor(); renderFeatures();
 }
 function collectNamespace(ns) {
@@ -220,6 +233,45 @@ function collectNamespace(ns) {
   };
   if(ns==="social") return {facebook:readText("social_facebook"),instagram:readText("social_instagram"),tiktok:readText("social_tiktok"),youtube:readText("social_youtube")};
   if(ns==="seo") return {siteTitle:readText("seo_siteTitle"),description:readText("seo_description"),shareImage:readText("seo_shareImage")};
+  if(ns==="ads") return {
+    homeLeft:{
+      enabled:document.getElementById("ads_homeLeft_enabled").checked,
+      type:readText("ads_homeLeft_type")||"video",
+      mediaUrl:readText("ads_homeLeft_mediaUrl"),
+      clickUrl:readText("ads_homeLeft_clickUrl"),
+      label:readText("ads_homeLeft_label")||"Advertisement",
+      autoplay:document.getElementById("ads_homeLeft_autoplay").checked,
+      muted:document.getElementById("ads_homeLeft_muted").checked,
+      loop:document.getElementById("ads_homeLeft_loop").checked,
+      fit:"cover"
+    },
+    homeRight:{
+      enabled:document.getElementById("ads_homeRight_enabled").checked,
+      type:readText("ads_homeRight_type")||"video",
+      mediaUrl:readText("ads_homeRight_mediaUrl"),
+      clickUrl:readText("ads_homeRight_clickUrl"),
+      label:readText("ads_homeRight_label")||"Advertisement",
+      autoplay:document.getElementById("ads_homeRight_autoplay").checked,
+      muted:document.getElementById("ads_homeRight_muted").checked,
+      loop:document.getElementById("ads_homeRight_loop").checked,
+      fit:"cover"
+    }
+  };
+  if(ns==="live") return {
+    heroTitle:readText("live_heroTitle"),heroSubtitle:readText("live_heroSubtitle"),
+    stationLabel:readText("live_stationLabel"),streamLabel:readText("live_streamLabel"),
+    fallbackTrackTitle:readText("live_fallbackTrackTitle"),fallbackTrackArtist:readText("live_fallbackTrackArtist"),
+    playerEnabled:document.getElementById("live_playerEnabled").checked,
+    casterPublicToken:CMS.live?.casterPublicToken||"",
+    casterTheme:CMS.live?.casterTheme||"dark",
+    casterColor:CMS.live?.casterColor||"ffba00"
+  };
+  if(ns==="chat") return {
+    enabled:document.getElementById("chat_enabled").checked,
+    title:readText("chat_title"),subtitle:readText("chat_subtitle"),
+    statusLabel:readText("chat_statusLabel"),placeholder:readText("chat_placeholder"),
+    placement:"live-right"
+  };
   if(ns==="features"){
     const next={...(CMS.features||{})};
     document.querySelectorAll("[data-feature]").forEach(el=>next[el.dataset.feature]=el.checked);
