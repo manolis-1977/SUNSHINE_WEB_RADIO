@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /SUNSHINE_WEB_RADIO/admin/
+Disallow: /admin/
 
-Sitemap: https://manolis-1977.github.io/SUNSHINE_WEB_RADIO/sitemap.xml
+Sitemap: https://sunshinewebradio.com/sitemap.xml
