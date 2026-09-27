@@ -26,6 +26,15 @@ REQUIRED_IDS = {
     "contact.html": ["contactForm", "contactName", "contactEmail", "contactMessage", "contactFormStatus"],
 }
 
+PRELAUNCH_FILES = [
+    "privacy.html",
+    "terms.html",
+    "404.html",
+    "robots.txt",
+    "sitemap.xml",
+    "site.webmanifest",
+]
+
 NAV_TARGETS = {
     "index.html",
     "live-radio.html",
@@ -73,6 +82,10 @@ def local_target_exists(page: Path, raw_url: str) -> bool:
     except ValueError:
         return False
     return target.exists()
+
+for extra in PRELAUNCH_FILES:
+    if not (ROOT / extra).exists():
+        fail(f"Missing pre-launch file: {extra}")
 
 for page_name in PAGES:
     page = ROOT / page_name
@@ -139,8 +152,9 @@ for marker in [
     "PHASE 2C: STRONGER GLOW / BRIGHTNESS PASS",
     "PHASE 3A: MULTI-PAGE FUNCTIONAL POLISH",
     "PHASE 3B: CASTER.FM LIVE STREAM PLAYER",
+    "PRE-LAUNCH COMPLETION PASS",
 ]:
     if marker not in css:
         fail(f"assets/css/styles.css: missing marker '{marker}'")
 
-print("SUNSHINE PHASE 3A MULTI-PAGE FUNCTIONAL VALIDATION: PASS")
+print("SUNSHINE PRE-LAUNCH MULTI-PAGE VALIDATION: PASS")
