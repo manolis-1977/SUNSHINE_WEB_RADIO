@@ -812,6 +812,40 @@ function setupEmojiButtons() {
   });
 }
 
+function getDirectStreamUrl() {
+  const value = String(SUNSHINE_RADIO_CONFIG.streamUrl || "").trim();
+  if (!value) return "";
+  try {
+    const url = new URL(value, window.location.href);
+    return url.protocol === "https:" ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function ensureNativeRadioAudio() {
+  const streamUrl = getDirectStreamUrl();
+  if (!streamUrl) return null;
+
+  let audio = document.getElementById("sunshineNativeAudio");
+  if (!audio) {
+    audio = document.createElement("audio");
+    audio.id = "sunshineNativeAudio";
+    audio.preload = "none";
+    audio.playsInline = true;
+    audio.setAttribute("aria-label", "SunShine live stream");
+    audio.style.display = "none";
+    document.body.appendChild(audio);
+  }
+
+  if (audio.src !== streamUrl) audio.src = streamUrl;
+  return audio;
+}
+
+function hasNativeDirectStream() {
+  return Boolean(getDirectStreamUrl());
+}
+
 function getPlaybackMode() {
   const configured = SUNSHINE_PUBLIC_CONTENT.live?.defaultPlaybackMode === "auto" ? "auto" : "manual";
   try {
@@ -884,6 +918,17 @@ function prepareCasterAutoplayFrames() {
 }
 
 async function tryStartCasterPlayback({ userInitiated = false } = {}) {
+  const nativeAudio = ensureNativeRadioAudio();
+  if (nativeAudio) {
+    try {
+      nativeAudio.muted = false;
+      await nativeAudio.play();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   const widget = document.getElementById("casterLivePlayer");
   if (!widget) return false;
 
@@ -894,8 +939,10 @@ async function tryStartCasterPlayback({ userInitiated = false } = {}) {
       if (control.type === "media") {
         control.node.muted = false;
         await control.node.play();
-      } else {
+      } else if (userInitiated) {
         control.node.click();
+      } else {
+        return false;
       }
       return true;
     } catch {
@@ -928,15 +975,28 @@ async function applyPlaybackMode(mode, { persist = false, userInitiated = false 
   }
 
   if (normalized === "manual") {
+    const nativeAudio = document.getElementById("sunshineNativeAudio");
+    try { nativeAudio?.pause(); } catch {}
     updatePlaybackModeUi("manual");
+    return;
+  }
+
+  if (!hasNativeDirectStream() && !userInitiated) {
+    updatePlaybackModeUi(
+      "auto",
+      "AUTO saved. Caster Free requires PLAY after refresh; direct-stream AUTO is ready when a direct URL is available."
+    );
     return;
   }
 
   updatePlaybackModeUi("auto", "AUTO: trying to start the live stream…");
   const started = await tryStartCasterPlayback({ userInitiated });
   updatePlaybackModeUi("auto", started
-    ? "AUTO: live stream start requested."
-    : "AUTO is enabled. If your browser blocks sound autoplay, press PLAY once.");
+    ? "AUTO: live stream started."
+    : hasNativeDirectStream()
+      ? "AUTO is enabled. Your browser may require one interaction before sound can start."
+      : "AUTO saved. Caster Free requires PLAY after refresh."
+  );
 }
 
 function setupPlaybackMode() {
@@ -951,23 +1011,29 @@ function setupPlaybackMode() {
   });
 
   const retryAutoPlayback = () => {
-    if (getPlaybackMode() !== "auto") return;
+    if (getPlaybackMode() !== "auto" || !hasNativeDirectStream()) return;
     let tries = 0;
     const timer = window.setInterval(async () => {
       tries += 1;
-      prepareCasterAutoplayFrames();
       const started = await tryStartCasterPlayback();
-      if (started || tries >= 24) {
+      if (started || tries >= 12) {
         window.clearInterval(timer);
         updatePlaybackModeUi("auto", started
-          ? "AUTO: live stream start requested."
+          ? "AUTO: live stream started."
           : "AUTO is enabled. Your browser may require one interaction before sound can start.");
       }
     }, 750);
   };
 
   if (initialMode === "auto") {
-    retryAutoPlayback();
+    if (hasNativeDirectStream()) {
+      retryAutoPlayback();
+    } else {
+      updatePlaybackModeUi(
+        "auto",
+        "AUTO saved. Current Caster Free stream still requires PLAY after refresh."
+      );
+    }
 
     const resumeOnFirstGesture = () => {
       if (getPlaybackMode() === "auto") {
