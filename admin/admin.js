@@ -117,12 +117,148 @@ async function initSetup() {
   });
 }
 
+
+let CMS = {};
+
+function uid(prefix="item") {
+  return prefix + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,7);
+}
+function esc(value="") {
+  return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+function readText(id) { return document.getElementById(id)?.value?.trim() || ""; }
+function setInput(id, value) {
+  const el=document.getElementById(id);
+  if(!el) return;
+  if(el.type==="checkbox") el.checked=Boolean(value);
+  else el.value=value ?? "";
+}
+function normalizeOrder(items) {
+  return items.map((item,index)=>({...item,order:index+1}));
+}
+function renderScheduleEditor() {
+  const root=document.getElementById("scheduleEditor"); if(!root) return;
+  root.innerHTML=(CMS.schedule||[]).map((x,i)=>`
+    <div class="list-row" data-list="schedule" data-index="${i}">
+      <label>Start<input data-k="start" type="time" value="${esc(x.start)}"></label>
+      <label>End<input data-k="end" type="time" value="${esc(x.end)}"></label>
+      <label>Show<input data-k="show" value="${esc(x.show)}"></label>
+      <label>Host<input data-k="host" value="${esc(x.host)}"></label>
+      <label>Active<select data-k="active"><option value="true" ${x.active!==false?"selected":""}>Yes</option><option value="false" ${x.active===false?"selected":""}>No</option></select></label>
+      <button class="row-remove" data-remove="schedule" type="button">Remove</button>
+    </div>`).join("");
+}
+function renderShowsEditor() {
+  const root=document.getElementById("showsEditor"); if(!root) return;
+  root.innerHTML=(CMS.shows||[]).map((x,i)=>`
+    <div class="list-row shows" data-list="shows" data-index="${i}">
+      <label>Time<input data-k="time" value="${esc(x.time)}"></label>
+      <label>Name<input data-k="name" value="${esc(x.name)}"></label>
+      <label>Description<textarea data-k="description" rows="2">${esc(x.description)}</textarea></label>
+      <label>Active<select data-k="active"><option value="true" ${x.active!==false?"selected":""}>Yes</option><option value="false" ${x.active===false?"selected":""}>No</option></select></label>
+      <button class="row-remove" data-remove="shows" type="button">Remove</button>
+    </div>`).join("");
+}
+function renderDjsEditor() {
+  const root=document.getElementById("djsEditor"); if(!root) return;
+  root.innerHTML=(CMS.djs||[]).map((x,i)=>`
+    <div class="list-row djs" data-list="djs" data-index="${i}">
+      <label>Name<input data-k="name" value="${esc(x.name)}"></label>
+      <label>Show<input data-k="show" value="${esc(x.show)}"></label>
+      <label>Time<input data-k="time" value="${esc(x.time)}"></label>
+      <label>Image URL<input data-k="image" value="${esc(x.image||"")}"></label>
+      <label>Active<select data-k="active"><option value="true" ${x.active!==false?"selected":""}>Yes</option><option value="false" ${x.active===false?"selected":""}>No</option></select></label>
+      <button class="row-remove" data-remove="djs" type="button">Remove</button>
+    </div>`).join("");
+}
+function renderFeatures() {
+  const root=document.getElementById("featuresEditor"); if(!root) return;
+  const labels={
+    homeSchedule:"Home: Schedule",homeDjs:"Home: DJs",homeChat:"Home: Chat",listenEverywhere:"Home: Listen Everywhere",
+    showsPage:"Shows page",schedulePage:"Schedule page",djsPage:"DJs page",chatPage:"Chat page",contactPage:"Contact page",maintenanceMode:"Maintenance mode"
+  };
+  root.innerHTML=Object.entries(labels).map(([k,label])=>`<label class="feature-toggle"><input type="checkbox" data-feature="${k}" ${CMS.features?.[k]?"checked":""}> ${label}</label>`).join("");
+}
+function bindListEditors() {
+  document.addEventListener("input", event=>{
+    const row=event.target.closest("[data-list]"); if(!row) return;
+    const list=row.dataset.list, index=Number(row.dataset.index), key=event.target.dataset.k;
+    if(!key||!CMS[list]?.[index]) return;
+    let value=event.target.value;
+    if(key==="active") value=value==="true";
+    CMS[list][index][key]=value;
+  });
+  document.addEventListener("click", event=>{
+    const remove=event.target.closest("[data-remove]");
+    if(remove){
+      const row=remove.closest("[data-list]"), list=row.dataset.list, index=Number(row.dataset.index);
+      CMS[list].splice(index,1); CMS[list]=normalizeOrder(CMS[list]);
+      ({schedule:renderScheduleEditor,shows:renderShowsEditor,djs:renderDjsEditor}[list])();
+    }
+  });
+}
+function populateCms() {
+  const site=CMS.site||{};
+  ["stationName","tagline","heroTitle","heroAccent","subtitle","streamLabel"].forEach(k=>setInput("site_"+k,site[k]));
+  const contact=CMS.contact||{};
+  ["email","phone","location","publicContactEnabled","formEnabled"].forEach(k=>setInput("contact_"+k,contact[k]));
+  const social=CMS.social||{};
+  ["facebook","instagram","tiktok","youtube"].forEach(k=>setInput("social_"+k,social[k]));
+  const seo=CMS.seo||{};
+  ["siteTitle","description","shareImage"].forEach(k=>setInput("seo_"+k,seo[k]));
+  renderScheduleEditor(); renderShowsEditor(); renderDjsEditor(); renderFeatures();
+}
+function collectNamespace(ns) {
+  if(ns==="site") return {
+    stationName:readText("site_stationName"),tagline:readText("site_tagline"),heroTitle:readText("site_heroTitle"),
+    heroAccent:readText("site_heroAccent"),subtitle:readText("site_subtitle"),streamLabel:readText("site_streamLabel")
+  };
+  if(ns==="contact") return {
+    email:readText("contact_email"),phone:readText("contact_phone"),location:readText("contact_location"),
+    publicContactEnabled:document.getElementById("contact_publicContactEnabled").checked,
+    formEnabled:document.getElementById("contact_formEnabled").checked
+  };
+  if(ns==="social") return {facebook:readText("social_facebook"),instagram:readText("social_instagram"),tiktok:readText("social_tiktok"),youtube:readText("social_youtube")};
+  if(ns==="seo") return {siteTitle:readText("seo_siteTitle"),description:readText("seo_description"),shareImage:readText("seo_shareImage")};
+  if(ns==="features"){
+    const next={...(CMS.features||{})};
+    document.querySelectorAll("[data-feature]").forEach(el=>next[el.dataset.feature]=el.checked);
+    return next;
+  }
+  if(["schedule","shows","djs"].includes(ns)) return normalizeOrder(CMS[ns]||[]);
+  return CMS[ns]||{};
+}
+async function saveNamespace(ns) {
+  const status=document.getElementById("status_"+ns);
+  setStatus(status,"Saving…");
+  try{
+    const data=collectNamespace(ns);
+    await api("saveContent",{namespace:ns,data},getSessionToken());
+    CMS[ns]=data;
+    setStatus(status,"Saved and published.","ok");
+  }catch(error){setStatus(status,friendlyError(error),"error")}
+}
+async function loadCms() {
+  const result=await api("content",{},getSessionToken());
+  CMS=result.content||{};
+  populateCms();
+}
+function initCmsControls() {
+  bindListEditors();
+  document.querySelectorAll("[data-save]").forEach(btn=>btn.addEventListener("click",()=>saveNamespace(btn.dataset.save)));
+  document.getElementById("addSchedule")?.addEventListener("click",()=>{CMS.schedule=CMS.schedule||[];CMS.schedule.push({id:uid("schedule"),start:"00:00",end:"00:00",show:"New Show",host:"",active:true,order:CMS.schedule.length+1});renderScheduleEditor()});
+  document.getElementById("addShow")?.addEventListener("click",()=>{CMS.shows=CMS.shows||[];CMS.shows.push({id:uid("show"),name:"New Show",time:"",description:"",active:true,order:CMS.shows.length+1});renderShowsEditor()});
+  document.getElementById("addDj")?.addEventListener("click",()=>{CMS.djs=CMS.djs||[];CMS.djs.push({id:uid("dj"),name:"New DJ",show:"",time:"",image:"",bio:"",active:true,order:CMS.djs.length+1});renderDjsEditor()});
+}
+
 async function initDashboard() {
   if (!document.body.classList.contains("admin-dashboard")) return;
   const session = await guardDashboard();
   if (!session) return;
 
   document.getElementById("adminUsername").textContent = session.username;
+  initCmsControls();
+  try { await loadCms(); } catch (error) { console.error(error); }
   document.getElementById("sessionExpiry").textContent =
     new Date(session.expiresAt).toLocaleString();
 
