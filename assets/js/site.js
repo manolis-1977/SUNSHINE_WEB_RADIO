@@ -797,8 +797,8 @@ function setupEmojiButtons() {
         input.setSelectionRange?.(caret, caret);
       }
 
-      picker.classList.remove("is-open");
-      button.setAttribute("aria-expanded", "false");
+      // Keep the picker open so the user can add multiple emojis in sequence.
+      // It closes only via the emoji toggle, an outside click, or Escape.
       input.focus();
     });
   });
