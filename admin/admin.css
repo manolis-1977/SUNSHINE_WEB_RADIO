@@ -152,3 +152,39 @@ width:100%;border:1px solid rgba(255,207,74,.27);border-radius:10px;background:#
   cursor:not-allowed;
   filter:saturate(.45);
 }
+
+
+/* ===== CHAT ADMIN TIMED BLOCK ===== */
+.chat-block-duration{
+  min-height:34px;
+  padding:7px 9px;
+  border:1px solid rgba(255,196,38,.28);
+  border-radius:9px;
+  background:rgba(4,12,22,.72);
+  color:#f4f7fb;
+  font:inherit;
+  font-size:.74rem;
+  font-weight:700;
+}
+.chat-block-duration:focus{
+  outline:none;
+  border-color:rgba(255,205,66,.62);
+  box-shadow:0 0 0 2px rgba(255,190,24,.08);
+}
+.chat-block-duration:disabled{
+  opacity:.38;
+  cursor:not-allowed;
+}
+.chat-block-until{
+  display:inline-flex;
+  align-items:center;
+  min-height:34px;
+  padding:7px 9px;
+  border:1px solid rgba(255,190,24,.30);
+  border-radius:9px;
+  background:rgba(255,190,24,.07);
+  color:#ffd978;
+  font-size:.70rem;
+  font-weight:700;
+  white-space:nowrap;
+}
