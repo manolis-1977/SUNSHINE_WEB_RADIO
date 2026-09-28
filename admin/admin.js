@@ -89,6 +89,7 @@ function friendlyError(error) {
   if (code.includes("INVALID_CURRENT_PASSWORD")) return "Current password is incorrect.";
   if (code.includes("REMOVE_ADMIN_FIRST")) return "Remove Chat Admin rights before releasing this username.";
   if (code.includes("ADMIN_PROTECTED")) return "Chat Admin accounts are protected from this moderation action.";
+  if (code.includes("INVALID_BLOCK_UNTIL")) return "Choose a valid block duration.";
   return "Request failed. Please try again.";
 }
 
@@ -527,6 +528,16 @@ function renderChatUsersAdmin(){
       </div>
       <div class="chat-admin-actions">
         <button class="${user.is_admin?"row-remove":"primary-btn"}" type="button" data-chat-role>${user.is_admin?"Remove Admin":"Make Admin"}</button>
+        ${user.blocked
+          ? `<span class="chat-block-until">${user.blocked_until ? "Until " + esc(chatAdminDate(user.blocked_until)) : "No expiry"}</span>`
+          : `<select class="chat-block-duration" data-chat-block-duration aria-label="Block duration for ${esc(user.username||"")}" ${user.is_admin?"disabled title=\"Remove Chat Admin role before blocking\"":""}>
+              <option value="5">5 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="60">1 hour</option>
+              <option value="360">6 hours</option>
+              <option value="1440">24 hours</option>
+            </select>`}
         <button class="ghost-btn" type="button" data-chat-block ${user.is_admin?"disabled title=\"Remove Chat Admin role before blocking\"":""}>${user.blocked?"Unblock":"Block"}</button>
         <button class="row-remove" type="button" data-chat-ban ${user.is_admin?"disabled title=\"Remove Chat Admin role before banning\"":""}>${user.banned?"Unban":"Ban"}</button>
         <button class="ghost-btn" type="button" data-chat-release ${user.is_admin?"disabled title=\"Remove Chat Admin role before releasing username\"":""}>Release Username</button>
@@ -589,8 +600,23 @@ function initChatModeration(){
         setStatus(status,isAdmin?"Chat Admin granted.":"Chat Admin removed.","ok");
       }else if(event.target.closest("[data-chat-block]")){
         const blocked=!user.blocked;
-        await chatAdminApi("adminUserStatus",{id:user.id,blocked,banned:user.banned,reason:blocked?"Blocked by administrator":""});
-        setStatus(status,blocked?"User blocked.":"User unblocked.","ok");
+        if(blocked){
+          const durationSelect=row.querySelector("[data-chat-block-duration]");
+          const minutes=Number(durationSelect?.value||15);
+          const blockedUntil=new Date(Date.now()+minutes*60*1000).toISOString();
+          await chatAdminApi("adminUserStatus",{
+            id:user.id,
+            blocked:true,
+            blockedUntil,
+            banned:false,
+            reason:`Blocked by administrator for ${minutes} minute(s)`
+          });
+          const label=minutes<60?`${minutes} min`:`${minutes/60} h`;
+          setStatus(status,`User blocked for ${label}.`,"ok");
+        }else{
+          await chatAdminApi("adminUserStatus",{id:user.id,blocked:false,banned:user.banned,reason:""});
+          setStatus(status,"User unblocked.","ok");
+        }
       }else if(event.target.closest("[data-chat-ban]")){
         const banned=!user.banned;
         await chatAdminApi("adminUserStatus",{id:user.id,blocked:user.blocked,banned,reason:banned?"Banned by administrator":""});
