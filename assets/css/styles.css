@@ -3906,11 +3906,14 @@ main,
   left: 0;
   bottom: calc(100% + 9px);
   z-index: 30;
-  width: 286px;
-  max-width: min(286px, calc(100vw - 32px));
+  width: 360px;
+  max-width: min(360px, calc(100vw - 32px));
+  max-height: 260px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: none;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
   padding: 10px;
   border-radius: 16px;
   border: 1px solid rgba(255, 190, 31, .46);
@@ -3923,8 +3926,8 @@ main,
 }
 
 .emoji-choice {
-  width: 33px;
-  height: 33px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -3932,7 +3935,7 @@ main,
   border-radius: 9px;
   background: transparent;
   cursor: pointer;
-  font-size: 1.15rem;
+  font-size: 1.20rem;
   line-height: 1;
 }
 
@@ -3942,6 +3945,21 @@ main,
   background: rgba(255, 190, 31, .10);
   outline: none;
   transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  .emoji-picker {
+    width: min(320px, calc(100vw - 24px));
+    max-width: min(320px, calc(100vw - 24px));
+    max-height: 220px;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .emoji-choice {
+    width: 34px;
+    height: 34px;
+    font-size: 1.12rem;
+  }
 }
 
 
