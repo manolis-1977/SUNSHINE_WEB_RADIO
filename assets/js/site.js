@@ -740,7 +740,9 @@ function setupChat(feedId, formId, inputId) {
 
   const savedUsername = storedChatUsername();
   if (savedUsername) {
-    claimChatUsername(panel, savedUsername).catch(() => {});
+    claimChatUsername(panel, savedUsername)
+      .then(() => renderRemoteChat(feed))
+      .catch(() => {});
   } else {
     updateChatLoginUi(panel, "");
   }
@@ -752,7 +754,8 @@ function setupChat(feedId, formId, inputId) {
     try {
       await claimChatUsername(panel, username);
       if (usernameInput) usernameInput.value = "";
-      showToast("Welcome to SunShine Chat.");
+      await renderRemoteChat(feed);
+      showToast(SUNSHINE_CHAT_CURRENT_USER?.is_admin ? "Welcome, SunShine Chat Admin." : "Welcome to SunShine Chat.");
     } catch {}
   });
 
