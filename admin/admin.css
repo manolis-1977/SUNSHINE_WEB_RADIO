@@ -128,3 +128,27 @@ width:100%;border:1px solid rgba(255,207,74,.27);border-radius:10px;background:#
 .chat-state.banned{color:#ff9daf;background:rgba(255,72,101,.09);border:1px solid rgba(255,72,101,.3)}
 @media(max-width:950px){.chat-admin-grid{grid-template-columns:1fr}}
 @media(max-width:650px){.chat-user-admin-row,.chat-message-admin-row{grid-template-columns:1fr}.chat-admin-actions{justify-content:flex-start}}
+
+
+/* ===== CHAT ADMIN ROLE ===== */
+.chat-state-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.chat-state.admin{
+  color:#ffe781;
+  background:rgba(255,190,24,.12);
+  border:1px solid rgba(255,210,70,.48);
+  box-shadow:0 0 16px rgba(255,190,24,.08);
+}
+.chat-user-admin-row.is-chat-admin{
+  border-color:rgba(255,205,66,.42);
+  background:linear-gradient(90deg,rgba(255,190,24,.05),rgba(4,12,22,.40));
+}
+.chat-admin-actions button:disabled{
+  opacity:.38;
+  cursor:not-allowed;
+  filter:saturate(.45);
+}
