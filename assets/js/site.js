@@ -28,6 +28,7 @@ const SUNSHINE_PLAYBACK_MODE_KEY = "sunshine_playback_mode_v1";
 let SUNSHINE_SHOWS = [];
 let SUNSHINE_LIFESTYLE_ARTICLES = [];
 let SUNSHINE_PUBLIC_CONTENT = {};
+let SUNSHINE_CHAT_CURRENT_USER = null;
 const SUNSHINE_RADIO_CONFIG = window.SUNSHINE_RADIO_CONFIG || { streamUrl: "", metadataUrl: "" };
 
 const menuToggle = document.getElementById("menuToggle");
@@ -598,7 +599,21 @@ function chatErrorMessage(error) {
   if (code === "BANNED") return "This username has been banned from SunShine Chat.";
   if (code === "BLOCKED") return "This username is currently blocked from SunShine Chat.";
   if (code === "USERNAME_OWNED_BY_ANOTHER_DEVICE") return "This username belongs to another saved device.";
+  if (code === "ADMIN_PROTECTED") return "Another Chat Admin cannot be moderated here.";
+  if (code === "INVALID_BLOCK_UNTIL") return "Choose a valid block duration.";
+  if (code === "UNAUTHORIZED") return "Your Chat Admin session is no longer valid.";
   return "Chat is temporarily unavailable. Please try again.";
+}
+
+function chatModeratorPayload() {
+  return {
+    moderatorUsername: storedChatUsername(),
+    moderatorOwnerToken: chatOwnerToken()
+  };
+}
+
+function chatBlockUntil(minutes) {
+  return new Date(Date.now() + minutes * 60 * 1000).toISOString();
 }
 
 function messageMarkup(message) {
@@ -607,15 +622,38 @@ function messageMarkup(message) {
   const time = message.created_at
     ? new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : String(message.time || "");
+  const currentId = SUNSHINE_CHAT_CURRENT_USER?.id || "";
+  const canModerate = Boolean(
+    SUNSHINE_CHAT_CURRENT_USER?.is_admin &&
+    message.user_id &&
+    message.user_id !== currentId &&
+    !message.author_is_admin
+  );
+  const moderation = canModerate ? `
+    <div class="chat-inline-moderation" data-chat-target-user="${escapeHtml(message.user_id)}" data-chat-target-name="${escapeHtml(user)}">
+      <select data-chat-block-duration aria-label="Block duration for ${escapeHtml(user)}">
+        <option value="5">5 min</option>
+        <option value="15">15 min</option>
+        <option value="30">30 min</option>
+        <option value="60">1 hour</option>
+        <option value="360">6 hours</option>
+        <option value="1440">24 hours</option>
+      </select>
+      <button type="button" data-chat-inline-block>Block</button>
+      <button type="button" class="danger" data-chat-inline-ban>Ban</button>
+    </div>` : "";
+  const adminBadge = message.author_is_admin ? '<span class="chat-admin-badge">ADMIN</span>' : "";
   return `
     <article class="chat-message" data-chat-message-id="${escapeHtml(message.id || "")}">
       <div class="avatar">${escapeHtml(initials)}</div>
       <div class="message-copy">
         <div class="message-meta">
           <strong>${escapeHtml(user)}</strong>
+          ${adminBadge}
           <span>${escapeHtml(time)}</span>
         </div>
         <p class="message-bubble">${escapeHtml(message.body || message.text || "")}</p>
+        ${moderation}
       </div>
     </article>
   `;
@@ -639,7 +677,7 @@ async function renderRemoteChat(feed) {
   }
 }
 
-function updateChatLoginUi(panel, username = "") {
+function updateChatLoginUi(panel, username = "", isAdmin = false) {
   if (!panel) return;
   const login = panel.querySelector("[data-chat-login]");
   const userBar = panel.querySelector("[data-chat-user-bar]");
@@ -647,7 +685,20 @@ function updateChatLoginUi(panel, username = "") {
   const compose = panel.querySelector(".chat-compose");
   const signedIn = Boolean(username);
   if (login) login.hidden = signedIn;
-  if (userBar) userBar.hidden = !signedIn;
+  if (userBar) {
+    userBar.hidden = !signedIn;
+    userBar.classList.toggle("is-chat-admin", signedIn && isAdmin);
+    let badge = userBar.querySelector("[data-chat-admin-badge]");
+    if (signedIn && isAdmin && !badge) {
+      badge = document.createElement("span");
+      badge.dataset.chatAdminBadge = "";
+      badge.className = "chat-user-admin-badge";
+      badge.textContent = "CHAT ADMIN";
+      userName?.after(badge);
+    } else if (badge && !isAdmin) {
+      badge.remove();
+    }
+  }
   if (userName) userName.textContent = username;
   if (compose) compose.hidden = !signedIn;
 }
@@ -661,12 +712,14 @@ async function claimChatUsername(panel, username) {
       ownerToken: chatOwnerToken()
     });
     const claimed = data.user?.username || username;
+    SUNSHINE_CHAT_CURRENT_USER = data.user || null;
     saveChatUsername(claimed);
-    updateChatLoginUi(panel, claimed);
+    updateChatLoginUi(panel, claimed, Boolean(data.user?.is_admin));
     if (status) status.textContent = "";
     return claimed;
   } catch (error) {
     if (status) status.textContent = chatErrorMessage(error);
+    SUNSHINE_CHAT_CURRENT_USER = null;
     updateChatLoginUi(panel, "");
     throw error;
   }
@@ -704,9 +757,48 @@ function setupChat(feedId, formId, inputId) {
   });
 
   logout?.addEventListener("click", () => {
+    SUNSHINE_CHAT_CURRENT_USER = null;
     clearChatIdentity();
     updateChatLoginUi(panel, "");
     showToast("Saved chat identity removed from this device.");
+  });
+
+  feed.addEventListener("click", async event => {
+    const controls = event.target.closest("[data-chat-target-user]");
+    if (!controls || !SUNSHINE_CHAT_CURRENT_USER?.is_admin) return;
+    const targetId = controls.dataset.chatTargetUser || "";
+    const targetName = controls.dataset.chatTargetName || "this user";
+    if (!targetId || targetId === SUNSHINE_CHAT_CURRENT_USER.id) return;
+
+    try {
+      if (event.target.closest("[data-chat-inline-block]")) {
+        const select = controls.querySelector("[data-chat-block-duration]");
+        const minutes = Number(select?.value || 15);
+        await chatApi("adminUserStatus", {
+          ...chatModeratorPayload(),
+          id: targetId,
+          blocked: true,
+          banned: false,
+          blockedUntil: chatBlockUntil(minutes),
+          reason: `Blocked by Chat Admin for ${minutes} minute(s)`
+        });
+        showToast(`${targetName} blocked for ${minutes < 60 ? minutes + " min" : (minutes / 60) + " h"}.`);
+        await renderRemoteChat(feed);
+      } else if (event.target.closest("[data-chat-inline-ban]")) {
+        if (!confirm(`Ban ${targetName} permanently from SunShine Chat?`)) return;
+        await chatApi("adminUserStatus", {
+          ...chatModeratorPayload(),
+          id: targetId,
+          blocked: false,
+          banned: true,
+          reason: "Banned by Chat Admin"
+        });
+        showToast(`${targetName} banned from SunShine Chat.`);
+        await renderRemoteChat(feed);
+      }
+    } catch (error) {
+      showToast(chatErrorMessage(error));
+    }
   });
 
   form.addEventListener("submit", async event => {
