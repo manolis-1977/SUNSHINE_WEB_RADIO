@@ -87,6 +87,8 @@ function friendlyError(error) {
   if (code.includes("INVALID_SETUP_KEY")) return "Invalid one-time setup key.";
   if (code.includes("ADMIN_ALREADY_PROVISIONED")) return "Admin account has already been created.";
   if (code.includes("INVALID_CURRENT_PASSWORD")) return "Current password is incorrect.";
+  if (code.includes("REMOVE_ADMIN_FIRST")) return "Remove Chat Admin rights before releasing this username.";
+  if (code.includes("ADMIN_PROTECTED")) return "Chat Admin accounts are protected from this moderation action.";
   return "Request failed. Please try again.";
 }
 
@@ -514,16 +516,20 @@ function renderChatUsersAdmin(){
     return;
   }
   root.innerHTML=CHAT_ADMIN.users.map(user=>`
-    <div class="chat-user-admin-row" data-chat-user-id="${user.id}">
+    <div class="chat-user-admin-row${user.is_admin?" is-chat-admin":""}" data-chat-user-id="${user.id}">
       <div class="chat-admin-main">
         <strong>${esc(user.username||"")}</strong>
         <small>Last seen: ${esc(chatAdminDate(user.last_seen_at))}</small>
-        ${user.banned?`<span class="chat-state banned">BANNED</span>`:user.blocked?`<span class="chat-state blocked">BLOCKED</span>`:`<span class="chat-state active">ACTIVE</span>`}
+        <div class="chat-state-row">
+          ${user.is_admin?`<span class="chat-state admin">CHAT ADMIN</span>`:""}
+          ${user.banned?`<span class="chat-state banned">BANNED</span>`:user.blocked?`<span class="chat-state blocked">BLOCKED</span>`:`<span class="chat-state active">ACTIVE</span>`}
+        </div>
       </div>
       <div class="chat-admin-actions">
-        <button class="ghost-btn" type="button" data-chat-block>${user.blocked?"Unblock":"Block"}</button>
-        <button class="row-remove" type="button" data-chat-ban>${user.banned?"Unban":"Ban"}</button>
-        <button class="ghost-btn" type="button" data-chat-release>Release Username</button>
+        <button class="${user.is_admin?"row-remove":"primary-btn"}" type="button" data-chat-role>${user.is_admin?"Remove Admin":"Make Admin"}</button>
+        <button class="ghost-btn" type="button" data-chat-block ${user.is_admin?"disabled title=\"Remove Chat Admin role before blocking\"":""}>${user.blocked?"Unblock":"Block"}</button>
+        <button class="row-remove" type="button" data-chat-ban ${user.is_admin?"disabled title=\"Remove Chat Admin role before banning\"":""}>${user.banned?"Unban":"Ban"}</button>
+        <button class="ghost-btn" type="button" data-chat-release ${user.is_admin?"disabled title=\"Remove Chat Admin role before releasing username\"":""}>Release Username</button>
       </div>
     </div>`).join("");
 }
@@ -574,7 +580,14 @@ function initChatModeration(){
     if(!user) return;
 
     try{
-      if(event.target.closest("[data-chat-block]")){
+      if(event.target.closest("[data-chat-role]")){
+        const isAdmin=!user.is_admin;
+        if(!confirm(isAdmin
+          ? `Make ${user.username} a Chat Admin? They will be able to moderate users and messages.`
+          : `Remove Chat Admin rights from ${user.username}?`)) return;
+        await chatAdminApi("adminSetRole",{id:user.id,isAdmin});
+        setStatus(status,isAdmin?"Chat Admin granted.":"Chat Admin removed.","ok");
+      }else if(event.target.closest("[data-chat-block]")){
         const blocked=!user.blocked;
         await chatAdminApi("adminUserStatus",{id:user.id,blocked,banned:user.banned,reason:blocked?"Blocked by administrator":""});
         setStatus(status,blocked?"User blocked.":"User unblocked.","ok");
