@@ -4298,3 +4298,66 @@ main,
   }
 }
 
+
+
+/* ===== CHAT INLINE ADMIN MODERATION ===== */
+.chat-user-bar.is-chat-admin{
+  border-color:rgba(255,205,66,.52);
+  background:linear-gradient(90deg,rgba(255,190,24,.09),rgba(24,230,143,.045));
+}
+.chat-user-admin-badge,
+.chat-admin-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:2px 6px;
+  border-radius:999px;
+  border:1px solid rgba(255,205,66,.46);
+  background:rgba(255,190,24,.11);
+  color:#ffe276 !important;
+  font-size:.62rem !important;
+  line-height:1.15;
+  font-weight:800;
+  letter-spacing:.04em;
+}
+.chat-user-admin-badge{margin-left:7px}
+.chat-inline-moderation{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+.chat-inline-moderation select,
+.chat-inline-moderation button{
+  min-height:28px;
+  border-radius:8px;
+  border:1px solid rgba(255,195,40,.28);
+  background:rgba(4,12,22,.92);
+  color:#f5f7fa;
+  font:inherit;
+  font-size:.70rem;
+  font-weight:700;
+  padding:4px 7px;
+}
+.chat-inline-moderation button{
+  cursor:pointer;
+  color:#ffe176;
+}
+.chat-inline-moderation button:hover{
+  border-color:rgba(255,205,66,.62);
+  background:rgba(255,190,24,.09);
+}
+.chat-inline-moderation button.danger{
+  color:#ff9bac;
+  border-color:rgba(255,74,104,.38);
+}
+.chat-inline-moderation button.danger:hover{
+  background:rgba(255,74,104,.10);
+  border-color:rgba(255,74,104,.68);
+}
+@media(max-width:760px){
+  .chat-inline-moderation{gap:4px}
+  .chat-inline-moderation select,
+  .chat-inline-moderation button{font-size:.66rem;padding:4px 6px}
+}
