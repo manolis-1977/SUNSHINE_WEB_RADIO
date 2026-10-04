@@ -571,8 +571,9 @@ function saveChatUsername(username) {
 
 function clearChatIdentity() {
   try {
+    // Sign out only. Keep the per-device owner token so this browser can
+    // reclaim the same reserved username later.
     localStorage.removeItem(CHAT_USERNAME_KEY);
-    localStorage.removeItem(CHAT_OWNER_TOKEN_KEY);
   } catch {}
 }
 
@@ -719,8 +720,27 @@ async function claimChatUsername(panel, username) {
     return claimed;
   } catch (error) {
     if (status) status.textContent = chatErrorMessage(error);
-    SUNSHINE_CHAT_CURRENT_USER = null;
-    updateChatLoginUi(panel, "");
+    const code = String(error?.message || "");
+    const identityRejected = new Set([
+      "USERNAME_TAKEN",
+      "USERNAME_OWNED_BY_ANOTHER_DEVICE",
+      "BANNED",
+      "BLOCKED",
+      "INVALID_USERNAME",
+      "INVALID_DEVICE_TOKEN"
+    ]);
+
+    if (identityRejected.has(code)) {
+      SUNSHINE_CHAT_CURRENT_USER = null;
+      updateChatLoginUi(panel, "");
+    } else {
+      // A temporary network/API failure must not make a valid saved identity
+      // disappear and tempt the user to claim the same username again.
+      const saved = storedChatUsername();
+      if (saved && saved.toLowerCase() === String(username || "").trim().toLowerCase()) {
+        updateChatLoginUi(panel, saved, Boolean(SUNSHINE_CHAT_CURRENT_USER?.is_admin));
+      }
+    }
     throw error;
   }
 }
@@ -740,6 +760,9 @@ function setupChat(feedId, formId, inputId) {
 
   const savedUsername = storedChatUsername();
   if (savedUsername) {
+    // Restore the saved identity immediately to avoid login-screen flicker
+    // while the server validates the existing device ownership.
+    updateChatLoginUi(panel, savedUsername, false);
     claimChatUsername(panel, savedUsername)
       .then(() => renderRemoteChat(feed))
       .catch(() => {});
@@ -763,7 +786,7 @@ function setupChat(feedId, formId, inputId) {
     SUNSHINE_CHAT_CURRENT_USER = null;
     clearChatIdentity();
     updateChatLoginUi(panel, "");
-    showToast("Saved chat identity removed from this device.");
+    showToast("Signed out. Your reserved username remains linked to this device.");
   });
 
   feed.addEventListener("click", async event => {
