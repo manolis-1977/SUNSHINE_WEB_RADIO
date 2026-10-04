@@ -212,6 +212,27 @@ Deno.serve(async req=>{
       return json(req,200,{ok:true,deleted:count||0});
     }
 
+    if(action==="adminClearAllMessages"){
+      const admin=await adminSession(req);
+      if(!admin) return json(req,401,{error:"UNAUTHORIZED"});
+
+      const {data:deleted,error}=await supabase
+        .from("sunshine_chat_messages")
+        .delete()
+        .not("id","is",null)
+        .select("id");
+      if(error) throw error;
+
+      const deletedCount=Array.isArray(deleted)?deleted.length:0;
+      await supabase.from("sunshine_chat_moderation_log").insert({
+        admin_id:admin.admin_id,
+        action:"clear_all_messages",
+        details:{deleted_count:deletedCount}
+      });
+
+      return json(req,200,{ok:true,deletedCount});
+    }
+
     if(action==="adminUserStatus"){
       const actor=await moderationActor(req,body); if(!actor) return json(req,401,{error:"UNAUTHORIZED"});
       const id=String(body.id||""); if(!id) return json(req,400,{error:"USER_REQUIRED"});
