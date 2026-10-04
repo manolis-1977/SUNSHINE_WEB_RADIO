@@ -584,6 +584,22 @@ function initChatModeration(){
     catch(error){setStatus(status,friendlyError(error),"error")}
   });
 
+  document.getElementById("clearAllChatMessages")?.addEventListener("click",async event=>{
+    const button=event.currentTarget;
+    if(!confirm("Clear ALL chat messages permanently? Users, usernames, Chat Admin roles, blocks and bans will NOT be changed.")) return;
+    button.disabled=true;
+    setStatus(status,"Clearing all chat messages…");
+    try{
+      const data=await chatAdminApi("adminClearMessages");
+      setStatus(status,`All chat messages cleared (${Number(data.deleted||0)} removed). Users were not changed.`,"ok");
+      await loadChatModeration();
+    }catch(error){
+      setStatus(status,friendlyError(error),"error");
+    }finally{
+      button.disabled=false;
+    }
+  });
+
   document.getElementById("chatUsersAdmin")?.addEventListener("click",async event=>{
     const row=event.target.closest("[data-chat-user-id]");
     if(!row) return;
