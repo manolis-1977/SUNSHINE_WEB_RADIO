@@ -422,13 +422,13 @@ Deno.serve(async req=>{
 
         if(message.user_id && message.user_id!==session.user.id){
           const {error:notifyErr}=await supabase.from("sunshine_chat_notifications")
-            .upsert({
+            .insert({
               user_id:message.user_id,
               actor_user_id:session.user.id,
               type:"reaction",
               message_id:messageId,
               reaction
-            },{onConflict:"user_id,actor_user_id,type,message_id,reaction",ignoreDuplicates:true});
+            });
           if(notifyErr && String(notifyErr.code)!=="23505") throw notifyErr;
         }
       }
