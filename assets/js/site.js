@@ -777,7 +777,6 @@ function setupChat(feedId, formId, inputId) {
   const loginForm = panel?.querySelector("[data-chat-login-form]");
   const usernameInput = panel?.querySelector("[data-chat-username]");
   const passwordInput = panel?.querySelector("[data-chat-password]");
-  const loginButton = panel?.querySelector("[data-chat-login-submit]");
   const signupButton = panel?.querySelector("[data-chat-signup-submit]");
   const logout = panel?.querySelector("[data-chat-logout]");
 
@@ -802,11 +801,6 @@ function setupChat(feedId, formId, inputId) {
   };
 
   loginForm?.addEventListener("submit", async event => {
-    event.preventDefault();
-    await submitChatAuth("login");
-  });
-
-  loginButton?.addEventListener("click", async event => {
     event.preventDefault();
     await submitChatAuth("login");
   });
