@@ -235,6 +235,7 @@ for token in [
     "CHAT_SESSION_TOKEN_KEY",
     "authenticateChatAccount",
     "restoreChatSession",
+    "data-chat-reaction",
     "renderRemoteChat",
 ]:
     if token not in site_js:
