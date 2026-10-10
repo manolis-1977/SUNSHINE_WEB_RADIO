@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=chat15">
+  <link rel="stylesheet" href="assets/css/styles.css?v=chatlogin1">
 </head>
 <body class="sunshine-page page-chat">
   <div class="page-shell">
@@ -62,7 +62,7 @@
                 <span class="chat-icon">•••</span>
                 <h2>Join the <span>SunShine Chat</span></h2>
               </div>
-              <p>Live SunShine community chat. Choose a username once and this device remembers it.</p>
+              <p>Live SunShine community chat. Sign in with the same username and code from any device.</p>
             </div>
             <div class="chat-status">
               <span><i class="online-dot"></i>Live community</span>
@@ -70,11 +70,12 @@
           </div>
           <div class="chat-login-panel" data-chat-login>
             <div class="chat-login-copy">
-              <strong>Choose your SunShine username</strong>
-              <span>Your username stays reserved to this browser/device, even after signing out.</span>
+              <strong>SunShine Chat Login</strong>
+              <span>Use the same username and code from any device. New usernames are created automatically the first time you enter.</span>
             </div>
             <form class="chat-login-form" data-chat-login-form>
               <input type="text" data-chat-username maxlength="24" minlength="3" autocomplete="username" placeholder="Username" required>
+              <input type="password" data-chat-code minlength="6" maxlength="32" autocomplete="current-password" placeholder="Code (6–32 characters)" required>
               <button class="send-button" type="submit">Enter Chat</button>
             </form>
             <p class="chat-login-status" data-chat-login-status></p>
@@ -128,6 +129,6 @@
     </footer>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="assets/js/site.js?v=chatidentity2"></script>
+  <script src="assets/js/site.js?v=chatlogin1"></script>
 </body>
 </html>
