@@ -656,6 +656,16 @@ function messageMarkup(message) {
       <button type="button" data-chat-inline-block>Block</button>
       <button type="button" class="danger" data-chat-inline-ban>Ban</button>
     </div>` : "";
+
+  const counts = message.reactions && typeof message.reactions === "object" ? message.reactions : {};
+  const reactionBar = ["❤️", "👍", "😂", "🔥", "👏"].map(reaction => {
+    const count = Number(counts[reaction] || 0);
+    return `<button type="button" class="chat-reaction-button" data-chat-reaction="${reaction}" aria-label="React ${reaction}">
+      <span class="chat-reaction-emoji">${reaction}</span>
+      ${count > 0 ? `<span class="chat-reaction-count">${count}</span>` : ""}
+    </button>`;
+  }).join("");
+
   const adminBadge = message.author_is_admin ? '<span class="chat-admin-badge">ADMIN</span>' : "";
   return `
     <article class="chat-message" data-chat-message-id="${escapeHtml(message.id || "")}">
@@ -667,6 +677,7 @@ function messageMarkup(message) {
           <span>${escapeHtml(time)}</span>
         </div>
         <p class="message-bubble">${escapeHtml(message.body || message.text || "")}</p>
+        <div class="chat-reactions" aria-label="Message reactions">${reactionBar}</div>
         ${moderation}
       </div>
     </article>
@@ -822,6 +833,37 @@ function setupChat(feedId, formId, inputId) {
   });
 
   feed.addEventListener("click", async event => {
+    const reactionButton = event.target.closest("[data-chat-reaction]");
+    if (reactionButton) {
+      const message = reactionButton.closest("[data-chat-message-id]");
+      const messageId = message?.dataset.chatMessageId || "";
+      const reaction = reactionButton.dataset.chatReaction || "";
+      const sessionToken = chatSessionToken();
+
+      if (!sessionToken || !SUNSHINE_CHAT_CURRENT_USER) {
+        showToast("Login to react to chat messages.");
+        return;
+      }
+      if (!messageId || !reaction) return;
+
+      reactionButton.disabled = true;
+      try {
+        await chatApi("react", { sessionToken, messageId, reaction });
+        await renderRemoteChat(feed);
+      } catch (error) {
+        showToast(chatErrorMessage(error));
+        const code = String(error?.message || "");
+        if (code === "SESSION_INVALID" || code === "BANNED" || code === "BLOCKED") {
+          clearChatIdentity();
+          SUNSHINE_CHAT_CURRENT_USER = null;
+          updateChatLoginUi(panel, "");
+        }
+      } finally {
+        reactionButton.disabled = false;
+      }
+      return;
+    }
+
     const controls = event.target.closest("[data-chat-target-user]");
     if (!controls || !SUNSHINE_CHAT_CURRENT_USER?.is_admin) return;
     const targetId = controls.dataset.chatTargetUser || "";
