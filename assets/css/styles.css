@@ -3809,7 +3809,7 @@ main,
 .chat-login-copy{display:grid;gap:4px}
 .chat-login-copy strong{color:#ffe16d}
 .chat-login-copy span,.chat-login-status{color:var(--muted);font-size:.78rem;line-height:1.45}
-.chat-login-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr) auto;gap:9px}
+.chat-login-form{display:grid;grid-template-columns:1fr;gap:9px}
 .chat-login-form input{
   min-width:0;border:1px solid rgba(255,205,66,.34);border-radius:12px;
   background:#06101d;color:#fff;padding:11px 12px;font:inherit;outline:none
@@ -4365,7 +4365,8 @@ main,
 
 /* ===== CHAT LOGIN / SIGNUP ACCOUNT ACTIONS ===== */
 .chat-auth-actions{
-  display:flex;
+  display:grid;
+  grid-template-columns:1fr 1fr;
   align-items:stretch;
   gap:8px;
 }
