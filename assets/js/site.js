@@ -20,6 +20,7 @@ const SUNSHINE_INITIAL_MESSAGES = []
 const CHAT_STORAGE_KEY = "sunshine_chat_preview_v1";
 const CHAT_USERNAME_KEY = "sunshine_chat_username_v1";
 const CHAT_OWNER_TOKEN_KEY = "sunshine_chat_owner_token_v1";
+const CHAT_SESSION_TOKEN_KEY = "sunshine_chat_session_token_v1";
 const CONTACT_STORAGE_KEY = "sunshine_contact_draft_v1";
 const SUNSHINE_CMS_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-admin-auth";
 const SUNSHINE_LIFESTYLE_API = "https://mrxiticrskkmwatclkbb.supabase.co/functions/v1/sunshine-lifestyle-api";
@@ -569,11 +570,22 @@ function saveChatUsername(username) {
   try { localStorage.setItem(CHAT_USERNAME_KEY, username); } catch {}
 }
 
+function chatSessionToken() {
+  try { return localStorage.getItem(CHAT_SESSION_TOKEN_KEY) || ""; }
+  catch { return ""; }
+}
+
+function saveChatSession(token, username) {
+  try {
+    localStorage.setItem(CHAT_SESSION_TOKEN_KEY, token);
+    localStorage.setItem(CHAT_USERNAME_KEY, username);
+  } catch {}
+}
+
 function clearChatIdentity() {
   try {
-    // Sign out only. Keep the per-device owner token so this browser can
-    // reclaim the same reserved username later.
     localStorage.removeItem(CHAT_USERNAME_KEY);
+    localStorage.removeItem(CHAT_SESSION_TOKEN_KEY);
   } catch {}
 }
 
@@ -595,11 +607,14 @@ async function chatApi(action, payload = {}) {
 
 function chatErrorMessage(error) {
   const code = String(error?.message || "");
-  if (code === "USERNAME_TAKEN") return "This username is already reserved by another device. Choose another username.";
+  if (code === "USERNAME_TAKEN") return "This username already has an account. Use its code to sign in.";
   if (code === "INVALID_USERNAME") return "Use 3–24 letters, numbers, spaces, dot, dash or underscore.";
+  if (code === "INVALID_CODE") return "Code must be 6–32 characters.";
+  if (code === "WRONG_CODE") return "Wrong code for this username.";
+  if (code === "ACCOUNT_NEEDS_CODE_SETUP") return "This older username must first set a code from its original device.";
+  if (code === "SESSION_INVALID") return "Your chat login has expired. Sign in again.";
   if (code === "BANNED") return "This username has been banned from SunShine Chat.";
   if (code === "BLOCKED") return "This username is currently blocked from SunShine Chat.";
-  if (code === "USERNAME_OWNED_BY_ANOTHER_DEVICE") return "This username belongs to another saved device.";
   if (code === "ADMIN_PROTECTED") return "Another Chat Admin cannot be moderated here.";
   if (code === "INVALID_BLOCK_UNTIL") return "Choose a valid block duration.";
   if (code === "UNAUTHORIZED") return "Your Chat Admin session is no longer valid.";
@@ -607,10 +622,7 @@ function chatErrorMessage(error) {
 }
 
 function chatModeratorPayload() {
-  return {
-    moderatorUsername: storedChatUsername(),
-    moderatorOwnerToken: chatOwnerToken()
-  };
+  return { moderatorSessionToken: chatSessionToken() };
 }
 
 function chatBlockUntil(minutes) {
@@ -704,44 +716,58 @@ function updateChatLoginUi(panel, username = "", isAdmin = false) {
   if (compose) compose.hidden = !signedIn;
 }
 
-async function claimChatUsername(panel, username) {
+async function loginChatAccount(panel, username, code) {
   const status = panel?.querySelector("[data-chat-login-status]");
-  if (status) status.textContent = "Checking username…";
+  if (status) status.textContent = "Signing in…";
   try {
-    const data = await chatApi("claim", {
+    const data = await chatApi("login", {
       username,
+      code,
+      // Used only to securely upgrade an older device-bound username.
       ownerToken: chatOwnerToken()
     });
-    const claimed = data.user?.username || username;
-    SUNSHINE_CHAT_CURRENT_USER = data.user || null;
-    saveChatUsername(claimed);
-    updateChatLoginUi(panel, claimed, Boolean(data.user?.is_admin));
+    const user = data.user || null;
+    const signedInName = user?.username || username;
+    SUNSHINE_CHAT_CURRENT_USER = user;
+    saveChatSession(data.sessionToken || "", signedInName);
+    updateChatLoginUi(panel, signedInName, Boolean(user?.is_admin));
     if (status) status.textContent = "";
-    return claimed;
+    return signedInName;
   } catch (error) {
     if (status) status.textContent = chatErrorMessage(error);
-    const code = String(error?.message || "");
-    const identityRejected = new Set([
-      "USERNAME_TAKEN",
-      "USERNAME_OWNED_BY_ANOTHER_DEVICE",
-      "BANNED",
-      "BLOCKED",
-      "INVALID_USERNAME",
-      "INVALID_DEVICE_TOKEN"
-    ]);
+    SUNSHINE_CHAT_CURRENT_USER = null;
+    updateChatLoginUi(panel, "");
+    throw error;
+  }
+}
 
-    if (identityRejected.has(code)) {
+async function restoreChatSession(panel) {
+  const token = chatSessionToken();
+  if (!token) {
+    updateChatLoginUi(panel, "");
+    return false;
+  }
+
+  const savedUsername = storedChatUsername();
+  if (savedUsername) updateChatLoginUi(panel, savedUsername, false);
+
+  try {
+    const data = await chatApi("session", { sessionToken: token });
+    SUNSHINE_CHAT_CURRENT_USER = data.user || null;
+    const username = data.user?.username || savedUsername;
+    if (username) saveChatUsername(username);
+    updateChatLoginUi(panel, username, Boolean(data.user?.is_admin));
+    return true;
+  } catch (error) {
+    const code = String(error?.message || "");
+    if (code === "SESSION_INVALID" || code === "BANNED" || code === "BLOCKED") {
+      clearChatIdentity();
       SUNSHINE_CHAT_CURRENT_USER = null;
       updateChatLoginUi(panel, "");
-    } else {
-      // A temporary network/API failure must not make a valid saved identity
-      // disappear and tempt the user to claim the same username again.
-      const saved = storedChatUsername();
-      if (saved && saved.toLowerCase() === String(username || "").trim().toLowerCase()) {
-        updateChatLoginUi(panel, saved, Boolean(SUNSHINE_CHAT_CURRENT_USER?.is_admin));
-      }
     }
-    throw error;
+    const status = panel?.querySelector("[data-chat-login-status]");
+    if (status && code !== "SESSION_INVALID") status.textContent = chatErrorMessage(error);
+    return false;
   }
 }
 
@@ -754,39 +780,37 @@ function setupChat(feedId, formId, inputId) {
   const panel = feed.closest(".chat-panel") || feed.parentElement;
   const loginForm = panel?.querySelector("[data-chat-login-form]");
   const usernameInput = panel?.querySelector("[data-chat-username]");
+  const codeInput = panel?.querySelector("[data-chat-code]");
   const logout = panel?.querySelector("[data-chat-logout]");
 
   renderRemoteChat(feed);
-
-  const savedUsername = storedChatUsername();
-  if (savedUsername) {
-    // Restore the saved identity immediately to avoid login-screen flicker
-    // while the server validates the existing device ownership.
-    updateChatLoginUi(panel, savedUsername, false);
-    claimChatUsername(panel, savedUsername)
-      .then(() => renderRemoteChat(feed))
-      .catch(() => {});
-  } else {
-    updateChatLoginUi(panel, "");
-  }
+  restoreChatSession(panel).then(ok => {
+    if (ok) renderRemoteChat(feed);
+  });
 
   loginForm?.addEventListener("submit", async event => {
     event.preventDefault();
     const username = String(usernameInput?.value || "").trim();
-    if (!username) return;
+    const code = String(codeInput?.value || "");
+    if (!username || !code) return;
     try {
-      await claimChatUsername(panel, username);
+      await loginChatAccount(panel, username, code);
       if (usernameInput) usernameInput.value = "";
+      if (codeInput) codeInput.value = "";
       await renderRemoteChat(feed);
       showToast(SUNSHINE_CHAT_CURRENT_USER?.is_admin ? "Welcome, SunShine Chat Admin." : "Welcome to SunShine Chat.");
     } catch {}
   });
 
-  logout?.addEventListener("click", () => {
+  logout?.addEventListener("click", async () => {
+    const token = chatSessionToken();
+    try {
+      if (token) await chatApi("logout", { sessionToken: token });
+    } catch {}
     SUNSHINE_CHAT_CURRENT_USER = null;
     clearChatIdentity();
     updateChatLoginUi(panel, "");
-    showToast("Signed out. Your reserved username remains linked to this device.");
+    showToast("Signed out from SunShine Chat.");
   });
 
   feed.addEventListener("click", async event => {
@@ -829,21 +853,25 @@ function setupChat(feedId, formId, inputId) {
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
-    const username = storedChatUsername();
     const text = input.value.trim();
-    if (!username) {
-      showToast("Choose your username before sending messages.");
+    const sessionToken = chatSessionToken();
+    if (!sessionToken || !SUNSHINE_CHAT_CURRENT_USER) {
+      showToast("Sign in to SunShine Chat before sending messages.");
+      updateChatLoginUi(panel, "");
       return;
     }
     if (!text) return;
     try {
-      await chatApi("post", { username, ownerToken: chatOwnerToken(), text });
+      await chatApi("post", { sessionToken, text });
       input.value = "";
       await renderRemoteChat(feed);
       input.focus();
     } catch (error) {
       showToast(chatErrorMessage(error));
-      if (String(error?.message || "") === "BANNED" || String(error?.message || "") === "BLOCKED") {
+      const code = String(error?.message || "");
+      if (code === "SESSION_INVALID" || code === "BANNED" || code === "BLOCKED") {
+        clearChatIdentity();
+        SUNSHINE_CHAT_CURRENT_USER = null;
         updateChatLoginUi(panel, "");
       }
     }
