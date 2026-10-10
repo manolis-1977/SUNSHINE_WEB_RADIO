@@ -189,7 +189,6 @@ Deno.serve(async req=>{
       const {data:user,error:createErr}=await supabase.from("sunshine_chat_users")
         .insert({
           username,
-          username_key:key,
           owner_token_hash:legacyOwnerHash,
           password_hash:pHash,
           password_salt:salt
