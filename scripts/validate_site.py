@@ -236,6 +236,9 @@ for token in [
     "authenticateChatAccount",
     "restoreChatSession",
     "data-chat-reaction",
+    "data-chat-reply",
+    "pollChatNotifications",
+    "chatNotificationText",
     "renderRemoteChat",
 ]:
     if token not in site_js:
