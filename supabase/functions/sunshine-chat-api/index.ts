@@ -320,7 +320,7 @@ Deno.serve(async req=>{
     if(action==="messages"){
       const limit=Math.max(1,Math.min(100,Number(body.limit||50)));
       const {data,error}=await supabase.from("sunshine_chat_messages")
-        .select("id,user_id,username_snapshot,body,created_at")
+        .select("id,user_id,username_snapshot,body,created_at,reply_to_message_id")
         .is("deleted_at",null)
         .order("created_at",{ascending:false})
         .limit(limit);
@@ -350,10 +350,21 @@ Deno.serve(async req=>{
         for(const id of messageIds) reactionsByMessage.set(id,reactionCounts(grouped.get(id)||[]));
       }
 
+      const replyIds=[...new Set(rows.map((m:any)=>m.reply_to_message_id).filter(Boolean))];
+      const replyById=new Map<string,any>();
+      if(replyIds.length){
+        const {data:replyRows,error:rre}=await supabase.from("sunshine_chat_messages")
+          .select("id,user_id,username_snapshot,body")
+          .in("id",replyIds);
+        if(rre) throw rre;
+        for(const reply of replyRows||[]) replyById.set(reply.id,reply);
+      }
+
       return json(req,200,{ok:true,messages:rows.map((m:any)=>({
         ...m,
         author_is_admin:adminIds.has(m.user_id),
-        reactions:reactionsByMessage.get(m.id)||{}
+        reactions:reactionsByMessage.get(m.id)||{},
+        reply_to:m.reply_to_message_id ? (replyById.get(m.reply_to_message_id)||null) : null
       }))});
     }
 
@@ -370,7 +381,7 @@ Deno.serve(async req=>{
       if(session.user.blocked) return json(req,403,{error:"BLOCKED",reason:session.user.ban_reason||"",blockedUntil:session.user.blocked_until||null});
 
       const {data:message,error:messageErr}=await supabase.from("sunshine_chat_messages")
-        .select("id")
+        .select("id,user_id")
         .eq("id",messageId)
         .is("deleted_at",null)
         .maybeSingle();
@@ -393,11 +404,33 @@ Deno.serve(async req=>{
           .eq("user_id",session.user.id)
           .eq("reaction",reaction);
         if(deleteErr) throw deleteErr;
+
+        if(message.user_id && message.user_id!==session.user.id){
+          await supabase.from("sunshine_chat_notifications")
+            .delete()
+            .eq("user_id",message.user_id)
+            .eq("actor_user_id",session.user.id)
+            .eq("type","reaction")
+            .eq("message_id",messageId)
+            .eq("reaction",reaction);
+        }
       }else{
         const {error:insertErr}=await supabase.from("sunshine_chat_message_reactions")
           .insert({message_id:messageId,user_id:session.user.id,reaction});
         if(insertErr) throw insertErr;
         active=true;
+
+        if(message.user_id && message.user_id!==session.user.id){
+          const {error:notifyErr}=await supabase.from("sunshine_chat_notifications")
+            .upsert({
+              user_id:message.user_id,
+              actor_user_id:session.user.id,
+              type:"reaction",
+              message_id:messageId,
+              reaction
+            },{onConflict:"user_id,actor_user_id,type,message_id,reaction",ignoreDuplicates:true});
+          if(notifyErr && String(notifyErr.code)!=="23505") throw notifyErr;
+        }
       }
 
       const {data:all,error:allErr}=await supabase.from("sunshine_chat_message_reactions")
@@ -428,12 +461,82 @@ Deno.serve(async req=>{
         user=(auth as any).user;
       }
 
+      const replyToMessageId=String(body.replyToMessageId||"");
+      let replyTarget:any=null;
+      if(replyToMessageId){
+        const {data:target,error:targetErr}=await supabase.from("sunshine_chat_messages")
+          .select("id,user_id,username_snapshot,body")
+          .eq("id",replyToMessageId)
+          .is("deleted_at",null)
+          .maybeSingle();
+        if(targetErr) throw targetErr;
+        if(!target) return json(req,404,{error:"REPLY_TARGET_NOT_FOUND"});
+        replyTarget=target;
+      }
+
       const {data,error}=await supabase.from("sunshine_chat_messages")
-        .insert({user_id:user.id,username_snapshot:user.username,body:text})
-        .select("id,user_id,username_snapshot,body,created_at").single();
+        .insert({
+          user_id:user.id,
+          username_snapshot:user.username,
+          body:text,
+          reply_to_message_id:replyTarget?.id||null
+        })
+        .select("id,user_id,username_snapshot,body,created_at,reply_to_message_id").single();
       if(error) throw error;
+
+      if(replyTarget?.user_id && replyTarget.user_id!==user.id){
+        const {error:notifyErr}=await supabase.from("sunshine_chat_notifications")
+          .insert({
+            user_id:replyTarget.user_id,
+            actor_user_id:user.id,
+            type:"reply",
+            message_id:data.id,
+            reaction:null
+          });
+        if(notifyErr) throw notifyErr;
+      }
+
       await supabase.from("sunshine_chat_users").update({last_seen_at:new Date().toISOString()}).eq("id",user.id);
       return json(req,200,{ok:true,message:data});
+    }
+
+    if(action==="notifications"){
+      const session=await chatSession(String(body.sessionToken||""));
+      if(!session) return json(req,401,{error:"SESSION_INVALID"});
+      if(session.user.banned) return json(req,403,{error:"BANNED",reason:session.user.ban_reason||""});
+      if(session.user.blocked) return json(req,403,{error:"BLOCKED",reason:session.user.ban_reason||"",blockedUntil:session.user.blocked_until||null});
+
+      const {data:rows,error}=await supabase.from("sunshine_chat_notifications")
+        .select("id,type,message_id,reaction,actor_user_id,created_at")
+        .eq("user_id",session.user.id)
+        .is("read_at",null)
+        .order("created_at",{ascending:true})
+        .limit(20);
+      if(error) throw error;
+
+      const items=rows||[];
+      const actorIds=[...new Set(items.map((n:any)=>n.actor_user_id).filter(Boolean))];
+      const actorNames=new Map<string,string>();
+      if(actorIds.length){
+        const {data:actors,error:ae}=await supabase.from("sunshine_chat_users")
+          .select("id,username")
+          .in("id",actorIds);
+        if(ae) throw ae;
+        for(const actor of actors||[]) actorNames.set(actor.id,actor.username);
+      }
+
+      if(items.length){
+        const ids=items.map((n:any)=>n.id);
+        const {error:readErr}=await supabase.from("sunshine_chat_notifications")
+          .update({read_at:new Date().toISOString()})
+          .in("id",ids);
+        if(readErr) throw readErr;
+      }
+
+      return json(req,200,{ok:true,notifications:items.map((n:any)=>({
+        ...n,
+        actor_username:actorNames.get(n.actor_user_id)||"SunShine user"
+      }))});
     }
 
     if(action==="adminList"){
