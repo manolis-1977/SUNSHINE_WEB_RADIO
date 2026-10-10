@@ -4361,3 +4361,33 @@ main,
   .chat-inline-moderation select,
   .chat-inline-moderation button{font-size:.66rem;padding:4px 6px}
 }
+
+
+/* ===== CHAT LOGIN / SIGNUP ACCOUNT ACTIONS ===== */
+.chat-auth-actions{
+  display:flex;
+  align-items:stretch;
+  gap:8px;
+}
+.chat-auth-actions .send-button,
+.chat-auth-actions .chat-signup-button{
+  white-space:nowrap;
+}
+.chat-signup-button{
+  border:1px solid rgba(255,205,66,.34);
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
+  color:#ffe16d;
+  padding:11px 14px;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+.chat-signup-button:hover{
+  border-color:#ffe477;
+  background:rgba(255,190,24,.08);
+}
+@media(max-width:760px){
+  .chat-login-form{grid-template-columns:1fr}
+  .chat-auth-actions{display:grid;grid-template-columns:1fr 1fr}
+}
