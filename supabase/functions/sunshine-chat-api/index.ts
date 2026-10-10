@@ -97,6 +97,15 @@ function cleanMessage(raw:any){
   const v=String(raw||"").trim();
   return v.slice(0,220);
 }
+const CHAT_REACTIONS=new Set(["❤️","👍","😂","🔥","👏"]);
+function reactionCounts(rows:any[]){
+  const counts:Record<string,number>={};
+  for(const row of rows||[]){
+    const key=String(row.reaction||"");
+    if(CHAT_REACTIONS.has(key)) counts[key]=(counts[key]||0)+1;
+  }
+  return counts;
+}
 async function adminSession(req:Request){
   const token=bearer(req); if(!token) return null;
   const {data,error}=await supabase.rpc("sunshine_admin_validate_session",{p_token:token});
@@ -324,7 +333,78 @@ Deno.serve(async req=>{
         if(ae) throw ae;
         adminIds=new Set((authors||[]).filter((u:any)=>u.is_admin).map((u:any)=>u.id));
       }
-      return json(req,200,{ok:true,messages:rows.map((m:any)=>({...m,author_is_admin:adminIds.has(m.user_id)}))});
+
+      const messageIds=rows.map((m:any)=>m.id).filter(Boolean);
+      const reactionsByMessage=new Map<string,Record<string,number>>();
+      if(messageIds.length){
+        const {data:reactionRows,error:re}=await supabase.from("sunshine_chat_message_reactions")
+          .select("message_id,reaction")
+          .in("message_id",messageIds);
+        if(re) throw re;
+        const grouped=new Map<string,any[]>();
+        for(const row of reactionRows||[]){
+          const list=grouped.get(row.message_id)||[];
+          list.push(row);
+          grouped.set(row.message_id,list);
+        }
+        for(const id of messageIds) reactionsByMessage.set(id,reactionCounts(grouped.get(id)||[]));
+      }
+
+      return json(req,200,{ok:true,messages:rows.map((m:any)=>({
+        ...m,
+        author_is_admin:adminIds.has(m.user_id),
+        reactions:reactionsByMessage.get(m.id)||{}
+      }))});
+    }
+
+    if(action==="react"){
+      const sessionToken=String(body.sessionToken||"");
+      const messageId=String(body.messageId||"");
+      const reaction=String(body.reaction||"");
+      if(!messageId) return json(req,400,{error:"MESSAGE_REQUIRED"});
+      if(!CHAT_REACTIONS.has(reaction)) return json(req,400,{error:"INVALID_REACTION"});
+
+      const session=await chatSession(sessionToken);
+      if(!session) return json(req,401,{error:"SESSION_INVALID"});
+      if(session.user.banned) return json(req,403,{error:"BANNED",reason:session.user.ban_reason||""});
+      if(session.user.blocked) return json(req,403,{error:"BLOCKED",reason:session.user.ban_reason||"",blockedUntil:session.user.blocked_until||null});
+
+      const {data:message,error:messageErr}=await supabase.from("sunshine_chat_messages")
+        .select("id")
+        .eq("id",messageId)
+        .is("deleted_at",null)
+        .maybeSingle();
+      if(messageErr) throw messageErr;
+      if(!message) return json(req,404,{error:"MESSAGE_NOT_FOUND"});
+
+      const {data:existing,error:existingErr}=await supabase.from("sunshine_chat_message_reactions")
+        .select("message_id")
+        .eq("message_id",messageId)
+        .eq("user_id",session.user.id)
+        .eq("reaction",reaction)
+        .maybeSingle();
+      if(existingErr) throw existingErr;
+
+      let active=false;
+      if(existing){
+        const {error:deleteErr}=await supabase.from("sunshine_chat_message_reactions")
+          .delete()
+          .eq("message_id",messageId)
+          .eq("user_id",session.user.id)
+          .eq("reaction",reaction);
+        if(deleteErr) throw deleteErr;
+      }else{
+        const {error:insertErr}=await supabase.from("sunshine_chat_message_reactions")
+          .insert({message_id:messageId,user_id:session.user.id,reaction});
+        if(insertErr) throw insertErr;
+        active=true;
+      }
+
+      const {data:all,error:allErr}=await supabase.from("sunshine_chat_message_reactions")
+        .select("reaction")
+        .eq("message_id",messageId);
+      if(allErr) throw allErr;
+      return json(req,200,{ok:true,active,reactions:reactionCounts(all||[])});
     }
 
     if(action==="post"){
