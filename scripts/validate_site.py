@@ -142,7 +142,7 @@ for page_name in PAGES:
         fail(f"{page_name}: expected site.js cache key missing")
 
     if page_name in {"live-radio.html", "chat.html"}:
-        for token in ["data-chat-login", "data-chat-login-form", "data-chat-username", "data-chat-code", "data-chat-user-bar", "data-chat-logout"]:
+        for token in ["data-chat-login", "data-chat-login-form", "data-chat-username", "data-chat-password", "data-chat-login-submit", "data-chat-signup-submit", "data-chat-user-bar", "data-chat-logout"]:
             if token not in text:
                 fail(f"{page_name}: missing secure chat login control '{token}'")
 
@@ -233,7 +233,7 @@ for token in [
     "CHAT_USERNAME_KEY",
     "CHAT_OWNER_TOKEN_KEY",
     "CHAT_SESSION_TOKEN_KEY",
-    "loginChatAccount",
+    "authenticateChatAccount",
     "restoreChatSession",
     "renderRemoteChat",
 ]:
