@@ -4392,3 +4392,46 @@ main,
   .chat-login-form{grid-template-columns:1fr}
   .chat-auth-actions{display:grid;grid-template-columns:1fr 1fr}
 }
+
+
+/* ===== CHAT MESSAGE REACTIONS ===== */
+.chat-reactions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:6px;
+}
+.chat-reaction-button{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  min-height:28px;
+  padding:3px 8px;
+  border:1px solid rgba(255,205,66,.22);
+  border-radius:999px;
+  background:rgba(255,255,255,.035);
+  color:#eef4fb;
+  font:inherit;
+  font-size:.72rem;
+  cursor:pointer;
+  transition:border-color .15s ease,background .15s ease,transform .15s ease;
+}
+.chat-reaction-button:hover{
+  border-color:rgba(255,225,109,.7);
+  background:rgba(255,190,24,.10);
+  transform:translateY(-1px);
+}
+.chat-reaction-button:disabled{
+  opacity:.55;
+  cursor:wait;
+  transform:none;
+}
+.chat-reaction-emoji{
+  font-size:.92rem;
+  line-height:1;
+}
+.chat-reaction-count{
+  min-width:1ch;
+  font-weight:800;
+  color:#ffe16d;
+}
