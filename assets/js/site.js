@@ -607,11 +607,12 @@ async function chatApi(action, payload = {}) {
 
 function chatErrorMessage(error) {
   const code = String(error?.message || "");
-  if (code === "USERNAME_TAKEN") return "This username already has an account. Use its code to sign in.";
+  if (code === "USERNAME_TAKEN") return "This username already exists. Choose another username or use Login.";
   if (code === "INVALID_USERNAME") return "Use 3–24 letters, numbers, spaces, dot, dash or underscore.";
-  if (code === "INVALID_CODE") return "Code must be 6–32 characters.";
-  if (code === "WRONG_CODE") return "Wrong code for this username.";
-  if (code === "ACCOUNT_NEEDS_CODE_SETUP") return "This older username must first set a code from its original device.";
+  if (code === "INVALID_PASSWORD") return "Password must be 8–72 characters.";
+  if (code === "INVALID_CREDENTIALS") return "Wrong username or password.";
+  if (code === "PASSWORD_NOT_SET") return "This account does not have a password set.";
+  if (code === "LOGIN_LOCKED") return "Too many wrong attempts. Try again in 15 minutes.";
   if (code === "SESSION_INVALID") return "Your chat login has expired. Sign in again.";
   if (code === "BANNED") return "This username has been banned from SunShine Chat.";
   if (code === "BLOCKED") return "This username is currently blocked from SunShine Chat.";
@@ -716,16 +717,11 @@ function updateChatLoginUi(panel, username = "", isAdmin = false) {
   if (compose) compose.hidden = !signedIn;
 }
 
-async function loginChatAccount(panel, username, code) {
+async function authenticateChatAccount(panel, action, username, password) {
   const status = panel?.querySelector("[data-chat-login-status]");
-  if (status) status.textContent = "Signing in…";
+  if (status) status.textContent = action === "signup" ? "Creating account…" : "Signing in…";
   try {
-    const data = await chatApi("login", {
-      username,
-      code,
-      // Used only to securely upgrade an older device-bound username.
-      ownerToken: chatOwnerToken()
-    });
+    const data = await chatApi(action, { username, password });
     const user = data.user || null;
     const signedInName = user?.username || username;
     SUNSHINE_CHAT_CURRENT_USER = user;
@@ -780,7 +776,9 @@ function setupChat(feedId, formId, inputId) {
   const panel = feed.closest(".chat-panel") || feed.parentElement;
   const loginForm = panel?.querySelector("[data-chat-login-form]");
   const usernameInput = panel?.querySelector("[data-chat-username]");
-  const codeInput = panel?.querySelector("[data-chat-code]");
+  const passwordInput = panel?.querySelector("[data-chat-password]");
+  const loginButton = panel?.querySelector("[data-chat-login-submit]");
+  const signupButton = panel?.querySelector("[data-chat-signup-submit]");
   const logout = panel?.querySelector("[data-chat-logout]");
 
   renderRemoteChat(feed);
@@ -788,18 +786,34 @@ function setupChat(feedId, formId, inputId) {
     if (ok) renderRemoteChat(feed);
   });
 
+  const submitChatAuth = async action => {
+    const username = String(usernameInput?.value || "").trim();
+    const password = String(passwordInput?.value || "");
+    if (!username || !password) return;
+    try {
+      await authenticateChatAccount(panel, action, username, password);
+      if (usernameInput) usernameInput.value = "";
+      if (passwordInput) passwordInput.value = "";
+      await renderRemoteChat(feed);
+      showToast(action === "signup"
+        ? `Account created. Welcome ${SUNSHINE_CHAT_CURRENT_USER?.username || ""}.`
+        : (SUNSHINE_CHAT_CURRENT_USER?.is_admin ? "Welcome, SunShine Chat Admin." : "Welcome back to SunShine Chat."));
+    } catch {}
+  };
+
   loginForm?.addEventListener("submit", async event => {
     event.preventDefault();
-    const username = String(usernameInput?.value || "").trim();
-    const code = String(codeInput?.value || "");
-    if (!username || !code) return;
-    try {
-      await loginChatAccount(panel, username, code);
-      if (usernameInput) usernameInput.value = "";
-      if (codeInput) codeInput.value = "";
-      await renderRemoteChat(feed);
-      showToast(SUNSHINE_CHAT_CURRENT_USER?.is_admin ? "Welcome, SunShine Chat Admin." : "Welcome to SunShine Chat.");
-    } catch {}
+    await submitChatAuth("login");
+  });
+
+  loginButton?.addEventListener("click", async event => {
+    event.preventDefault();
+    await submitChatAuth("login");
+  });
+
+  signupButton?.addEventListener("click", async event => {
+    event.preventDefault();
+    await submitChatAuth("signup");
   });
 
   logout?.addEventListener("click", async () => {
