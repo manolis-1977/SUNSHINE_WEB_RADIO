@@ -27,10 +27,35 @@ async function hash(v:string){
 function randomToken(){
   return crypto.randomUUID()+crypto.randomUUID()+crypto.randomUUID();
 }
-function cleanCode(raw:any){
+function cleanPassword(raw:any){
   const v=String(raw||"");
-  if(v.length<6||v.length>32) return "";
+  if(v.length<8||v.length>72) return "";
   return v;
+}
+function randomSalt(){
+  const bytes=new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return [...bytes].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+async function passwordHash(password:string,salt:string){
+  const material=await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+  const bits=await crypto.subtle.deriveBits(
+    {
+      name:"PBKDF2",
+      hash:"SHA-256",
+      salt:new TextEncoder().encode(salt),
+      iterations:120000
+    },
+    material,
+    256
+  );
+  return [...new Uint8Array(bits)].map(x=>x.toString(16).padStart(2,"0")).join("");
 }
 async function createChatSession(userId:string){
   const token=randomToken();
@@ -146,63 +171,88 @@ Deno.serve(async req=>{
   const action=String(body.action||"");
 
   try{
+    if(action==="signup"){
+      const username=cleanUsername(body.username);
+      const password=cleanPassword(body.password);
+      if(!username) return json(req,400,{error:"INVALID_USERNAME"});
+      if(!password) return json(req,400,{error:"INVALID_PASSWORD"});
+
+      const key=username.toLowerCase();
+      const {data:existing,error:findErr}=await supabase.from("sunshine_chat_users")
+        .select("id").eq("username_key",key).maybeSingle();
+      if(findErr) throw findErr;
+      if(existing) return json(req,409,{error:"USERNAME_TAKEN"});
+
+      const salt=randomSalt();
+      const pHash=await passwordHash(password,salt);
+      const legacyOwnerHash=await hash(randomToken());
+      const {data:user,error:createErr}=await supabase.from("sunshine_chat_users")
+        .insert({
+          username,
+          username_key:key,
+          owner_token_hash:legacyOwnerHash,
+          password_hash:pHash,
+          password_salt:salt
+        })
+        .select("*").single();
+      if(createErr){
+        if(String(createErr.code)==="23505") return json(req,409,{error:"USERNAME_TAKEN"});
+        throw createErr;
+      }
+
+      const session=await createChatSession(user.id);
+      return json(req,201,{
+        ok:true,
+        sessionToken:session.token,
+        expiresAt:session.expiresAt,
+        user:{id:user.id,username:user.username,is_admin:Boolean(user.is_admin)}
+      });
+    }
+
     if(action==="login"){
       const username=cleanUsername(body.username);
-      const code=cleanCode(body.code);
-      const ownerToken=String(body.ownerToken||"");
+      const password=cleanPassword(body.password);
       if(!username) return json(req,400,{error:"INVALID_USERNAME"});
-      if(!code) return json(req,400,{error:"INVALID_CODE"});
-      const key=username.toLowerCase();
+      if(!password) return json(req,400,{error:"INVALID_PASSWORD"});
 
+      const key=username.toLowerCase();
       const {data:existing,error:findErr}=await supabase.from("sunshine_chat_users")
         .select("*").eq("username_key",key).maybeSingle();
       if(findErr) throw findErr;
+      if(!existing) return json(req,401,{error:"INVALID_CREDENTIALS"});
 
-      let user=existing;
-      if(!user){
-        const salt=randomToken();
-        const codeHash=await hash(salt+":"+code);
-        const legacyOwnerHash=await hash(randomToken());
-        const {data:created,error:createErr}=await supabase.from("sunshine_chat_users")
-          .insert({
-            username,
-            username_key:key,
-            owner_token_hash:legacyOwnerHash,
-            code_hash:codeHash,
-            code_salt:salt
-          })
-          .select("*").single();
-        if(createErr){
-          if(String(createErr.code)==="23505") return json(req,409,{error:"USERNAME_TAKEN"});
-          throw createErr;
-        }
-        user=created;
-      }else{
-        user=await normalizeExpiredBlock(user);
-        if(user.banned) return json(req,403,{error:"BANNED",reason:user.ban_reason||""});
-        if(user.blocked) return json(req,403,{error:"BLOCKED",reason:user.ban_reason||"",blockedUntil:user.blocked_until||null});
+      let user=await normalizeExpiredBlock(existing);
+      if(user.banned) return json(req,403,{error:"BANNED",reason:user.ban_reason||""});
+      if(user.blocked) return json(req,403,{error:"BLOCKED",reason:user.ban_reason||"",blockedUntil:user.blocked_until||null});
 
-        if(!user.code_hash||!user.code_salt){
-          if(!ownerToken||ownerToken.length<32) return json(req,409,{error:"ACCOUNT_NEEDS_CODE_SETUP"});
-          const ownerHash=await hash(ownerToken);
-          if(user.owner_token_hash!==ownerHash) return json(req,409,{error:"ACCOUNT_NEEDS_CODE_SETUP"});
-          const salt=randomToken();
-          const codeHash=await hash(salt+":"+code);
-          const {data:upgraded,error:upgradeErr}=await supabase.from("sunshine_chat_users")
-            .update({code_hash:codeHash,code_salt:salt})
-            .eq("id",user.id)
-            .select("*").single();
-          if(upgradeErr) throw upgradeErr;
-          user=upgraded;
-        }else{
-          const provided=await hash(String(user.code_salt)+":"+code);
-          if(provided!==user.code_hash) return json(req,401,{error:"WRONG_CODE"});
-        }
+      const lockedUntil=user.password_locked_until ? Date.parse(String(user.password_locked_until)) : 0;
+      if(Number.isFinite(lockedUntil) && lockedUntil>Date.now()){
+        return json(req,429,{error:"LOGIN_LOCKED",lockedUntil:user.password_locked_until});
+      }
+
+      if(!user.password_hash||!user.password_salt){
+        return json(req,409,{error:"PASSWORD_NOT_SET"});
+      }
+
+      const provided=await passwordHash(password,String(user.password_salt));
+      if(provided!==user.password_hash){
+        const failures=Number(user.password_failures||0)+1;
+        const lockUntil=failures>=5 ? new Date(Date.now()+15*60*1000).toISOString() : null;
+        await supabase.from("sunshine_chat_users").update({
+          password_failures:lockUntil?0:failures,
+          password_locked_until:lockUntil
+        }).eq("id",user.id);
+        return json(req,401,{error:lockUntil?"LOGIN_LOCKED":"INVALID_CREDENTIALS",lockedUntil:lockUntil});
       }
 
       const now=new Date().toISOString();
-      await supabase.from("sunshine_chat_users")
-        .update({last_login_at:now,last_seen_at:now}).eq("id",user.id);
+      await supabase.from("sunshine_chat_users").update({
+        last_login_at:now,
+        last_seen_at:now,
+        password_failures:0,
+        password_locked_until:null
+      }).eq("id",user.id);
+
       const session=await createChatSession(user.id);
       return json(req,200,{
         ok:true,
