@@ -24,6 +24,44 @@ async function hash(v:string){
   const digest=await crypto.subtle.digest("SHA-256",bytes);
   return [...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
 }
+function randomToken(){
+  return crypto.randomUUID()+crypto.randomUUID()+crypto.randomUUID();
+}
+function cleanCode(raw:any){
+  const v=String(raw||"");
+  if(v.length<6||v.length>32) return "";
+  return v;
+}
+async function createChatSession(userId:string){
+  const token=randomToken();
+  const tokenHash=await hash(token);
+  const expiresAt=new Date(Date.now()+30*24*60*60*1000).toISOString();
+  const {error}=await supabase.from("sunshine_chat_sessions")
+    .insert({user_id:userId,token_hash:tokenHash,expires_at:expiresAt});
+  if(error) throw error;
+  return {token,expiresAt};
+}
+async function chatSession(token:string){
+  if(!token||token.length<40) return null;
+  const tokenHash=await hash(token);
+  const now=new Date().toISOString();
+  const {data:session,error}=await supabase.from("sunshine_chat_sessions")
+    .select("id,user_id,expires_at")
+    .eq("token_hash",tokenHash)
+    .gt("expires_at",now)
+    .maybeSingle();
+  if(error||!session) return null;
+  const {data:user,error:userErr}=await supabase.from("sunshine_chat_users")
+    .select("*").eq("id",session.user_id).maybeSingle();
+  if(userErr||!user) return null;
+  const normalized=await normalizeExpiredBlock(user);
+  if(normalized.banned||normalized.blocked) return {user:normalized,restricted:true};
+  await Promise.all([
+    supabase.from("sunshine_chat_sessions").update({last_seen_at:now}).eq("id",session.id),
+    supabase.from("sunshine_chat_users").update({last_seen_at:now}).eq("id",normalized.id)
+  ]);
+  return {user:normalized,restricted:false};
+}
 function cleanUsername(raw:any){
   const v=String(raw||"").trim().replace(/\s+/g," ");
   if(v.length<3||v.length>24) return "";
@@ -68,6 +106,16 @@ async function chatUser(username:string,ownerToken:string){
 async function moderationActor(req:Request, body:any){
   const owner=await adminSession(req);
   if(owner) return {kind:"owner",admin:owner};
+
+  const sessionToken=String(body?.sessionToken||body?.moderatorSessionToken||"");
+  if(sessionToken){
+    const session=await chatSession(sessionToken);
+    const user=session?.user;
+    if(!session||session.restricted||!user?.is_admin) return null;
+    return {kind:"chat",user};
+  }
+
+  // Legacy fallback during migration from device-bound chat identity.
   const username=cleanUsername(body?.moderatorUsername);
   const ownerToken=String(body?.moderatorOwnerToken||"");
   const auth=await chatUser(username,ownerToken);
@@ -98,6 +146,89 @@ Deno.serve(async req=>{
   const action=String(body.action||"");
 
   try{
+    if(action==="login"){
+      const username=cleanUsername(body.username);
+      const code=cleanCode(body.code);
+      const ownerToken=String(body.ownerToken||"");
+      if(!username) return json(req,400,{error:"INVALID_USERNAME"});
+      if(!code) return json(req,400,{error:"INVALID_CODE"});
+      const key=username.toLowerCase();
+
+      const {data:existing,error:findErr}=await supabase.from("sunshine_chat_users")
+        .select("*").eq("username_key",key).maybeSingle();
+      if(findErr) throw findErr;
+
+      let user=existing;
+      if(!user){
+        const salt=randomToken();
+        const codeHash=await hash(salt+":"+code);
+        const legacyOwnerHash=await hash(randomToken());
+        const {data:created,error:createErr}=await supabase.from("sunshine_chat_users")
+          .insert({
+            username,
+            username_key:key,
+            owner_token_hash:legacyOwnerHash,
+            code_hash:codeHash,
+            code_salt:salt
+          })
+          .select("*").single();
+        if(createErr){
+          if(String(createErr.code)==="23505") return json(req,409,{error:"USERNAME_TAKEN"});
+          throw createErr;
+        }
+        user=created;
+      }else{
+        user=await normalizeExpiredBlock(user);
+        if(user.banned) return json(req,403,{error:"BANNED",reason:user.ban_reason||""});
+        if(user.blocked) return json(req,403,{error:"BLOCKED",reason:user.ban_reason||"",blockedUntil:user.blocked_until||null});
+
+        if(!user.code_hash||!user.code_salt){
+          if(!ownerToken||ownerToken.length<32) return json(req,409,{error:"ACCOUNT_NEEDS_CODE_SETUP"});
+          const ownerHash=await hash(ownerToken);
+          if(user.owner_token_hash!==ownerHash) return json(req,409,{error:"ACCOUNT_NEEDS_CODE_SETUP"});
+          const salt=randomToken();
+          const codeHash=await hash(salt+":"+code);
+          const {data:upgraded,error:upgradeErr}=await supabase.from("sunshine_chat_users")
+            .update({code_hash:codeHash,code_salt:salt})
+            .eq("id",user.id)
+            .select("*").single();
+          if(upgradeErr) throw upgradeErr;
+          user=upgraded;
+        }else{
+          const provided=await hash(String(user.code_salt)+":"+code);
+          if(provided!==user.code_hash) return json(req,401,{error:"WRONG_CODE"});
+        }
+      }
+
+      const now=new Date().toISOString();
+      await supabase.from("sunshine_chat_users")
+        .update({last_login_at:now,last_seen_at:now}).eq("id",user.id);
+      const session=await createChatSession(user.id);
+      return json(req,200,{
+        ok:true,
+        sessionToken:session.token,
+        expiresAt:session.expiresAt,
+        user:{id:user.id,username:user.username,is_admin:Boolean(user.is_admin)}
+      });
+    }
+
+    if(action==="session"){
+      const session=await chatSession(String(body.sessionToken||""));
+      if(!session) return json(req,401,{error:"SESSION_INVALID"});
+      if(session.user.banned) return json(req,403,{error:"BANNED",reason:session.user.ban_reason||""});
+      if(session.user.blocked) return json(req,403,{error:"BLOCKED",reason:session.user.ban_reason||"",blockedUntil:session.user.blocked_until||null});
+      return json(req,200,{ok:true,user:{id:session.user.id,username:session.user.username,is_admin:Boolean(session.user.is_admin)}});
+    }
+
+    if(action==="logout"){
+      const token=String(body.sessionToken||"");
+      if(token){
+        const tokenHash=await hash(token);
+        await supabase.from("sunshine_chat_sessions").delete().eq("token_hash",tokenHash);
+      }
+      return json(req,200,{ok:true});
+    }
+
     if(action==="claim"){
       const username=cleanUsername(body.username);
       const ownerToken=String(body.ownerToken||"");
@@ -148,13 +279,26 @@ Deno.serve(async req=>{
     }
 
     if(action==="post"){
-      const username=cleanUsername(body.username);
-      const ownerToken=String(body.ownerToken||"");
       const text=cleanMessage(body.text);
       if(!text) return json(req,400,{error:"EMPTY_MESSAGE"});
-      const auth=await chatUser(username,ownerToken);
-      if(auth.error) return json(req,auth.error==="BANNED"||auth.error==="BLOCKED"?403:401,auth);
-      const user=(auth as any).user;
+
+      let user:any=null;
+      const sessionToken=String(body.sessionToken||"");
+      if(sessionToken){
+        const session=await chatSession(sessionToken);
+        if(!session) return json(req,401,{error:"SESSION_INVALID"});
+        if(session.user.banned) return json(req,403,{error:"BANNED",reason:session.user.ban_reason||""});
+        if(session.user.blocked) return json(req,403,{error:"BLOCKED",reason:session.user.ban_reason||"",blockedUntil:session.user.blocked_until||null});
+        user=session.user;
+      }else{
+        // Legacy fallback until old cached site.js versions disappear.
+        const username=cleanUsername(body.username);
+        const ownerToken=String(body.ownerToken||"");
+        const auth=await chatUser(username,ownerToken);
+        if(auth.error) return json(req,auth.error==="BANNED"||auth.error==="BLOCKED"?403:401,auth);
+        user=(auth as any).user;
+      }
+
       const {data,error}=await supabase.from("sunshine_chat_messages")
         .insert({user_id:user.id,username_snapshot:user.username,body:text})
         .select("id,user_id,username_snapshot,body,created_at").single();
