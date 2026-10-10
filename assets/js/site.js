@@ -30,6 +30,8 @@ let SUNSHINE_SHOWS = [];
 let SUNSHINE_LIFESTYLE_ARTICLES = [];
 let SUNSHINE_PUBLIC_CONTENT = {};
 let SUNSHINE_CHAT_CURRENT_USER = null;
+let SUNSHINE_CHAT_NOTIFICATION_QUEUE = [];
+let SUNSHINE_CHAT_NOTIFICATION_BUSY = false;
 const SUNSHINE_RADIO_CONFIG = window.SUNSHINE_RADIO_CONFIG || { streamUrl: "", metadataUrl: "" };
 
 const menuToggle = document.getElementById("menuToggle");
@@ -51,6 +53,50 @@ function showToast(message) {
   toast.classList.add("show");
   window.clearTimeout(showToast.timer);
   showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 3300);
+}
+
+function chatNotificationText(item) {
+  const actor = String(item?.actor_username || "SunShine user");
+  if (item?.type === "reaction") {
+    return `Ο χρήστης ${actor} έκανε ${item.reaction || "❤️"} στο μήνυμά σου.`;
+  }
+  if (item?.type === "reply") {
+    return `Ο χρήστης ${actor} σου απάντησε.`;
+  }
+  return "";
+}
+
+function runChatNotificationQueue() {
+  if (SUNSHINE_CHAT_NOTIFICATION_BUSY || !SUNSHINE_CHAT_NOTIFICATION_QUEUE.length) return;
+  SUNSHINE_CHAT_NOTIFICATION_BUSY = true;
+  const next = SUNSHINE_CHAT_NOTIFICATION_QUEUE.shift();
+  const text = chatNotificationText(next);
+  if (text) showToast(text);
+  window.setTimeout(() => {
+    SUNSHINE_CHAT_NOTIFICATION_BUSY = false;
+    runChatNotificationQueue();
+  }, 3600);
+}
+
+function enqueueChatNotifications(items) {
+  if (!Array.isArray(items) || !items.length) return;
+  SUNSHINE_CHAT_NOTIFICATION_QUEUE.push(...items);
+  runChatNotificationQueue();
+}
+
+async function pollChatNotifications() {
+  const sessionToken = chatSessionToken();
+  if (!sessionToken || !SUNSHINE_CHAT_CURRENT_USER) return;
+  try {
+    const data = await chatApi("notifications", { sessionToken });
+    enqueueChatNotifications(Array.isArray(data.notifications) ? data.notifications : []);
+  } catch (error) {
+    const code = String(error?.message || "");
+    if (code === "SESSION_INVALID" || code === "BANNED" || code === "BLOCKED") {
+      clearChatIdentity();
+      SUNSHINE_CHAT_CURRENT_USER = null;
+    }
+  }
 }
 
 
@@ -657,6 +703,13 @@ function messageMarkup(message) {
       <button type="button" class="danger" data-chat-inline-ban>Ban</button>
     </div>` : "";
 
+  const replyTo = message.reply_to && typeof message.reply_to === "object" ? message.reply_to : null;
+  const replyContext = replyTo ? `
+    <div class="chat-reply-context">
+      <strong>↩ ${escapeHtml(replyTo.username_snapshot || "User")}</strong>
+      <span>${escapeHtml(replyTo.body || "")}</span>
+    </div>` : "";
+
   const counts = message.reactions && typeof message.reactions === "object" ? message.reactions : {};
   const reactionBar = ["❤️", "👍", "😂", "🔥", "👏"].map(reaction => {
     const count = Number(counts[reaction] || 0);
@@ -665,6 +718,13 @@ function messageMarkup(message) {
       ${count > 0 ? `<span class="chat-reaction-count">${count}</span>` : ""}
     </button>`;
   }).join("");
+
+  const replyButton = `<button type="button"
+    class="chat-reply-button"
+    data-chat-reply
+    data-chat-reply-user="${escapeHtml(user)}"
+    data-chat-reply-body="${escapeHtml(message.body || message.text || "")}"
+    aria-label="Reply to ${escapeHtml(user)}">↩ Reply</button>`;
 
   const adminBadge = message.author_is_admin ? '<span class="chat-admin-badge">ADMIN</span>' : "";
   return `
@@ -676,8 +736,12 @@ function messageMarkup(message) {
           ${adminBadge}
           <span>${escapeHtml(time)}</span>
         </div>
+        ${replyContext}
         <p class="message-bubble">${escapeHtml(message.body || message.text || "")}</p>
-        <div class="chat-reactions" aria-label="Message reactions">${reactionBar}</div>
+        <div class="chat-message-actions">
+          <div class="chat-reactions" aria-label="Message reactions">${reactionBar}</div>
+          ${replyButton}
+        </div>
         ${moderation}
       </div>
     </article>
@@ -790,10 +854,47 @@ function setupChat(feedId, formId, inputId) {
   const passwordInput = panel?.querySelector("[data-chat-password]");
   const signupButton = panel?.querySelector("[data-chat-signup-submit]");
   const logout = panel?.querySelector("[data-chat-logout]");
+  let replyTarget = null;
+
+  const replyBanner = document.createElement("div");
+  replyBanner.className = "chat-compose-reply";
+  replyBanner.hidden = true;
+  replyBanner.innerHTML = `
+    <div>
+      <strong data-chat-compose-reply-user></strong>
+      <span data-chat-compose-reply-text></span>
+    </div>
+    <button type="button" data-chat-compose-reply-cancel aria-label="Cancel reply">×</button>
+  `;
+  form.before(replyBanner);
+
+  const clearReplyTarget = () => {
+    replyTarget = null;
+    replyBanner.hidden = true;
+    const user = replyBanner.querySelector("[data-chat-compose-reply-user]");
+    const text = replyBanner.querySelector("[data-chat-compose-reply-text]");
+    if (user) user.textContent = "";
+    if (text) text.textContent = "";
+  };
+
+  const setReplyTarget = target => {
+    replyTarget = target;
+    const user = replyBanner.querySelector("[data-chat-compose-reply-user]");
+    const text = replyBanner.querySelector("[data-chat-compose-reply-text]");
+    if (user) user.textContent = `Απάντηση στον ${target.user}`;
+    if (text) text.textContent = target.body;
+    replyBanner.hidden = false;
+    input.focus();
+  };
+
+  replyBanner.querySelector("[data-chat-compose-reply-cancel]")?.addEventListener("click", clearReplyTarget);
 
   renderRemoteChat(feed);
   restoreChatSession(panel).then(ok => {
-    if (ok) renderRemoteChat(feed);
+    if (ok) {
+      renderRemoteChat(feed);
+      pollChatNotifications();
+    }
   });
 
   const submitChatAuth = async action => {
@@ -805,6 +906,7 @@ function setupChat(feedId, formId, inputId) {
       if (usernameInput) usernameInput.value = "";
       if (passwordInput) passwordInput.value = "";
       await renderRemoteChat(feed);
+      await pollChatNotifications();
       showToast(action === "signup"
         ? `Account created. Welcome ${SUNSHINE_CHAT_CURRENT_USER?.username || ""}.`
         : (SUNSHINE_CHAT_CURRENT_USER?.is_admin ? "Welcome, SunShine Chat Admin." : "Welcome back to SunShine Chat."));
@@ -828,11 +930,30 @@ function setupChat(feedId, formId, inputId) {
     } catch {}
     SUNSHINE_CHAT_CURRENT_USER = null;
     clearChatIdentity();
+    clearReplyTarget();
+    SUNSHINE_CHAT_NOTIFICATION_QUEUE = [];
     updateChatLoginUi(panel, "");
     showToast("Signed out from SunShine Chat.");
   });
 
   feed.addEventListener("click", async event => {
+    const replyButton = event.target.closest("[data-chat-reply]");
+    if (replyButton) {
+      if (!chatSessionToken() || !SUNSHINE_CHAT_CURRENT_USER) {
+        showToast("Login to reply to chat messages.");
+        return;
+      }
+      const message = replyButton.closest("[data-chat-message-id]");
+      const messageId = message?.dataset.chatMessageId || "";
+      if (!messageId) return;
+      setReplyTarget({
+        id: messageId,
+        user: replyButton.dataset.chatReplyUser || "User",
+        body: replyButton.dataset.chatReplyBody || ""
+      });
+      return;
+    }
+
     const reactionButton = event.target.closest("[data-chat-reaction]");
     if (reactionButton) {
       const message = reactionButton.closest("[data-chat-message-id]");
@@ -912,8 +1033,13 @@ function setupChat(feedId, formId, inputId) {
     }
     if (!text) return;
     try {
-      await chatApi("post", { sessionToken, text });
+      await chatApi("post", {
+        sessionToken,
+        text,
+        replyToMessageId: replyTarget?.id || ""
+      });
       input.value = "";
+      clearReplyTarget();
       await renderRemoteChat(feed);
       input.focus();
     } catch (error) {
@@ -927,7 +1053,10 @@ function setupChat(feedId, formId, inputId) {
     }
   });
 
-  window.setInterval(() => renderRemoteChat(feed), 5000);
+  window.setInterval(() => {
+    renderRemoteChat(feed);
+    pollChatNotifications();
+  }, 5000);
 }
 
 function setupEmojiButtons() {
