@@ -748,21 +748,44 @@ function messageMarkup(message) {
   `;
 }
 
-async function renderRemoteChat(feed) {
+// Keep each chat feed's refreshes ordered and preserve a reader's scroll position.
+const chatFeedRefreshState = new WeakMap();
+
+async function renderRemoteChat(feed, { forceBottom = false } = {}) {
   if (!feed) return;
+  const state = chatFeedRefreshState.get(feed) || { request: 0, initialized: false, signature: null };
+  chatFeedRefreshState.set(feed, state);
+  const request = ++state.request;
   try {
     const data = await chatApi("messages", { limit: 60 });
+    if (request !== state.request || !feed.isConnected) return;
     const messages = Array.isArray(data.messages) ? data.messages : [];
-    if (!messages.length) {
-      feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>No public messages yet. Be the first to say hello.</p></div>';
+    const signature = JSON.stringify(messages);
+    // Refreshing unchanged messages must not recreate the DOM or disturb scrolling.
+    if (state.initialized && signature === state.signature) {
+      if (forceBottom) feed.scrollTop = feed.scrollHeight;
       return;
     }
-    const chronologicalMessages = [...messages].reverse();
-    feed.innerHTML = chronologicalMessages.map(messageMarkup).join("");
-    // The API returns newest first; display oldest at the top and newest at the bottom.
-    feed.scrollTop = feed.scrollHeight;
+    const maxScrollTop = Math.max(0, feed.scrollHeight - feed.clientHeight);
+    const wasAtBottom = !state.initialized || maxScrollTop - feed.scrollTop <= 40;
+    const previousScrollTop = feed.scrollTop;
+    if (!messages.length) {
+      feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>No public messages yet. Be the first to say hello.</p></div>';
+    } else {
+      const chronologicalMessages = [...messages].reverse();
+      feed.innerHTML = chronologicalMessages.map(messageMarkup).join("");
+    }
+    state.signature = signature;
+    state.initialized = true;
+    // Follow new messages only if the reader was already near the bottom.
+    // Otherwise preserve the exact position while reading earlier messages.
+    feed.scrollTop = forceBottom || wasAtBottom ? feed.scrollHeight : previousScrollTop;
   } catch {
-    feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>Chat messages are temporarily unavailable.</p></div>';
+    if (request !== state.request || !feed.isConnected) return;
+    // A transient polling error must not replace messages or change scroll position.
+    if (!state.initialized) {
+      feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>Chat messages are temporarily unavailable.</p></div>';
+    }
   }
 }
 
@@ -1040,7 +1063,7 @@ function setupChat(feedId, formId, inputId) {
       });
       input.value = "";
       clearReplyTarget();
-      await renderRemoteChat(feed);
+      await renderRemoteChat(feed, { forceBottom: true });
       input.focus();
     } catch (error) {
       showToast(chatErrorMessage(error));
