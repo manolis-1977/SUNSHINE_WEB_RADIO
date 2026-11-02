@@ -748,12 +748,22 @@ function messageMarkup(message) {
   `;
 }
 
-// Keep each chat feed's refreshes ordered and preserve a reader's scroll position.
+// An active reader controls the chat scroll. Polls never pull them to the bottom.
 const chatFeedRefreshState = new WeakMap();
+
+function chatAtBottom(feed) {
+  return feed.scrollHeight - feed.clientHeight - feed.scrollTop <= 2;
+}
+
+function setChatScrollImmediately(feed, top) {
+  // Override CSS smooth scrolling. Every restoration must be synchronous.
+  feed.scrollTo({ top, behavior: "instant" });
+}
 
 async function renderRemoteChat(feed, { forceBottom = false } = {}) {
   if (!feed) return;
-  const state = chatFeedRefreshState.get(feed) || { request: 0, initialized: false, signature: null };
+  const state = chatFeedRefreshState.get(feed) ||
+    { request: 0, initialized: false, signature: null, readerPaused: false };
   chatFeedRefreshState.set(feed, state);
   const request = ++state.request;
   try {
@@ -761,28 +771,57 @@ async function renderRemoteChat(feed, { forceBottom = false } = {}) {
     if (request !== state.request || !feed.isConnected) return;
     const messages = Array.isArray(data.messages) ? data.messages : [];
     const signature = JSON.stringify(messages);
-    // Refreshing unchanged messages must not recreate the DOM or disturb scrolling.
     if (state.initialized && signature === state.signature) {
-      if (forceBottom) feed.scrollTop = feed.scrollHeight;
+      if (forceBottom) {
+        state.readerPaused = false;
+        setChatScrollImmediately(feed, feed.scrollHeight);
+      }
       return;
     }
-    const maxScrollTop = Math.max(0, feed.scrollHeight - feed.clientHeight);
-    const wasAtBottom = !state.initialized || maxScrollTop - feed.scrollTop <= 40;
-    const previousScrollTop = feed.scrollTop;
+
+    const followBottom = forceBottom || !state.initialized ||
+      (!state.readerPaused && chatAtBottom(feed));
+    const previousTop = feed.scrollTop;
+    // Capture the visible message and its offset before replacing message markup.
+    // This preserves the reading position even when message heights change.
+    let anchorId = "";
+    let anchorOffset = 0;
+    if (!followBottom) {
+      const viewportTop = feed.getBoundingClientRect().top;
+      const visible = [...feed.querySelectorAll(".chat-message")].find(node =>
+        node.getBoundingClientRect().bottom > viewportTop + 1);
+      if (visible) {
+        anchorId = visible.dataset.chatMessageId || "";
+        anchorOffset = visible.getBoundingClientRect().top - viewportTop;
+      }
+    }
+
     if (!messages.length) {
       feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>No public messages yet. Be the first to say hello.</p></div>';
     } else {
-      const chronologicalMessages = [...messages].reverse();
-      feed.innerHTML = chronologicalMessages.map(messageMarkup).join("");
+      feed.innerHTML = [...messages].reverse().map(messageMarkup).join("");
     }
     state.signature = signature;
     state.initialized = true;
-    // Follow new messages only if the reader was already near the bottom.
-    // Otherwise preserve the exact position while reading earlier messages.
-    feed.scrollTop = forceBottom || wasAtBottom ? feed.scrollHeight : previousScrollTop;
+
+    if (followBottom) {
+      state.readerPaused = false;
+      setChatScrollImmediately(feed, feed.scrollHeight);
+    } else {
+      // Never replace the user's scroll with an automatic bottom jump.
+      setChatScrollImmediately(feed, previousTop);
+      if (anchorId) {
+        const sameMessage = [...feed.querySelectorAll(".chat-message")]
+          .find(node => node.dataset.chatMessageId === anchorId);
+        if (sameMessage) {
+          const position = sameMessage.getBoundingClientRect().top -
+            feed.getBoundingClientRect().top;
+          setChatScrollImmediately(feed, feed.scrollTop + position - anchorOffset);
+        }
+      }
+    }
   } catch {
     if (request !== state.request || !feed.isConnected) return;
-    // A transient polling error must not replace messages or change scroll position.
     if (!state.initialized) {
       feed.innerHTML = '<div class="chat-empty-state"><strong>SunShine Community</strong><p>Chat messages are temporarily unavailable.</p></div>';
     }
@@ -878,6 +917,22 @@ function setupChat(feedId, formId, inputId) {
   const signupButton = panel?.querySelector("[data-chat-signup-submit]");
   const logout = panel?.querySelector("[data-chat-logout]");
   let replyTarget = null;
+
+  // The reader owns the scroll once they interact with it. Re-enable following
+  // only when they manually return to the exact bottom or send a message.
+  const readerState = { request: 0, initialized: false, signature: null, readerPaused: false };
+  chatFeedRefreshState.set(feed, readerState);
+  const recordReaderScroll = () => {
+    readerState.readerPaused = !chatAtBottom(feed);
+  };
+  feed.addEventListener("wheel", recordReaderScroll, { passive: true });
+  feed.addEventListener("touchmove", recordReaderScroll, { passive: true });
+  feed.addEventListener("pointerup", recordReaderScroll, { passive: true });
+  feed.addEventListener("scroll", () => {
+    if (feed.matches(":hover") || feed.matches(":focus-within")) {
+      readerState.readerPaused = !chatAtBottom(feed);
+    }
+  }, { passive: true });
 
   const replyBanner = document.createElement("div");
   replyBanner.className = "chat-compose-reply";
