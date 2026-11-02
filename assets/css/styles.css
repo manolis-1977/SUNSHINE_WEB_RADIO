@@ -4526,3 +4526,13 @@ main,
   font-size:1rem;
   cursor:pointer;
 }
+
+
+/* Chat reader lock: never smooth-scroll or browser-anchor the message feed.
+   site.js restores the visible message position during live refreshes. */
+#chatFeedLive,
+#chatFeedPage {
+  scroll-behavior: auto !important;
+  overflow-anchor: none !important;
+  overscroll-behavior-y: contain;
+}
